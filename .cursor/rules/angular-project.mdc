@@ -1,0 +1,533 @@
+---
+description: Reglas de arquitectura y desarrollo para el frontend de la plataforma de invitaciones digitales
+globs:
+  - "src/**/*.ts"
+  - "src/**/*.html"
+  - "src/**/*.css"
+  - "src/**/*.scss"
+alwaysApply: true
+---
+
+# Contexto del proyecto
+
+Este proyecto es el frontend de una plataforma SaaS para crear y administrar invitaciones digitales.
+
+Los usuarios podrán:
+
+* Registrarse e iniciar sesión.
+* Crear eventos.
+* Crear invitaciones digitales.
+* Elegir plantillas.
+* Personalizar invitaciones.
+* Publicar invitaciones mediante una URL pública.
+* Compartir invitaciones por WhatsApp.
+* Administrar invitados.
+* Recibir confirmaciones RSVP.
+* Consultar estadísticas del evento.
+
+Tipos de eventos contemplados:
+
+* Bodas.
+* XV años.
+* Cumpleaños.
+* Baby Shower.
+* Bautizos.
+* Graduaciones.
+* Eventos empresariales.
+
+El frontend consumirá posteriormente una API REST desarrollada con NestJS, Prisma y PostgreSQL.
+
+# Stack obligatorio
+
+Utiliza:
+
+* Angular 20.
+* TypeScript.
+* Standalone Components.
+* Angular Router.
+* Reactive Forms.
+* HttpClient.
+* Tailwind CSS.
+* Signals cuando sean apropiadas para manejar estado local.
+* RxJS cuando sea necesario para operaciones asíncronas, streams y comunicación HTTP.
+
+No utilizar NgModules para nuevas funcionalidades.
+
+No agregar librerías externas sin que el usuario lo solicite explícitamente.
+
+# Angular moderno
+
+Utiliza patrones modernos compatibles con Angular 20.
+
+Preferir:
+
+* `inject()` para inyección de dependencias.
+* `signal()` para estado local cuando sea apropiado.
+* `computed()` para estado derivado.
+* `effect()` únicamente cuando exista una razón clara para ejecutar efectos secundarios.
+* Control flow moderno de Angular: `@if`, `@for`, `@switch`.
+* Lazy loading.
+* Standalone components.
+* Reactive Forms.
+
+Evitar introducir patrones legacy cuando Angular moderno proporcione una alternativa clara.
+
+No migrar automáticamente código existente únicamente por preferencia estilística si funciona correctamente.
+
+# Arquitectura
+
+Mantener esta organización general:
+
+src/app/
+core/
+guards/
+interceptors/
+services/
+models/
+
+shared/
+components/
+directives/
+pipes/
+models/
+
+features/
+auth/
+dashboard/
+events/
+invitations/
+templates/
+guests/
+
+layouts/
+auth-layout/
+dashboard-layout/
+
+app.routes.ts
+app.config.ts
+
+# Core
+
+`core` debe contener elementos globales o singleton de la aplicación.
+
+Ejemplos:
+
+* AuthenticationService.
+* Guards.
+* HTTP interceptors.
+* Configuración global.
+* Servicios globales.
+
+No colocar componentes específicos de funcionalidades dentro de `core`.
+
+# Shared
+
+`shared` debe contener elementos reutilizables por diferentes funcionalidades.
+
+Ejemplos:
+
+* ButtonComponent.
+* ModalComponent.
+* InputComponent.
+* LoadingComponent.
+* EmptyStateComponent.
+* ConfirmDialogComponent.
+
+Un componente específico de `events`, `guests` o cualquier otra feature no debe moverse a `shared` salvo que realmente sea reutilizable.
+
+# Features
+
+Cada funcionalidad debe permanecer lo más autocontenida posible.
+
+Ejemplo:
+
+features/events/
+components/
+pages/
+models/
+services/
+events.routes.ts
+
+Separar:
+
+* Pages: componentes asociados directamente a una ruta.
+* Components: componentes reutilizables dentro de la feature.
+* Services: acceso a datos y lógica relacionada con la feature.
+* Models: tipos específicos de la feature.
+
+No crear carpetas vacías innecesariamente.
+
+# Componentes
+
+Los componentes deben:
+
+* Tener una responsabilidad clara.
+* Ser standalone.
+* Mantenerse pequeños cuando sea razonable.
+* Evitar lógica de negocio compleja.
+* Delegar acceso a API a servicios.
+* Usar ChangeDetectionStrategy.OnPush cuando sea apropiado.
+* Mantener HTML legible.
+
+Si un componente crece demasiado, evaluar primero si existen responsabilidades que puedan separarse.
+
+No dividir componentes únicamente para reducir líneas de código.
+
+# TypeScript
+
+Mantener TypeScript estrictamente tipado.
+
+No utilizar `any` salvo que sea absolutamente necesario.
+
+Preferir:
+
+* interfaces
+* type aliases
+* enums únicamente cuando aporten claridad real
+
+No duplicar interfaces.
+
+Antes de crear un modelo nuevo, revisar si ya existe uno equivalente.
+
+No utilizar nombres genéricos como:
+
+data
+item
+obj
+value
+
+cuando pueda utilizarse un nombre específico del dominio.
+
+# Nombres
+
+El código debe escribirse en inglés.
+
+Ejemplos:
+
+Event
+Guest
+Invitation
+Template
+User
+EventService
+InvitationService
+
+Los textos visibles para el usuario pueden escribirse en español.
+
+Usar nombres descriptivos para:
+
+* variables
+* métodos
+* componentes
+* servicios
+* interfaces
+* rutas
+
+# Servicios
+
+Los componentes no deben realizar directamente llamadas HTTP.
+
+Crear servicios especializados.
+
+Ejemplo:
+
+EventService
+GuestService
+InvitationService
+TemplateService
+
+Los servicios HTTP deben retornar Observables y definir correctamente sus tipos.
+
+Evitar suscripciones anidadas.
+
+No realizar `subscribe()` dentro de otro `subscribe()`.
+
+Utilizar operadores RxJS cuando sea necesario.
+
+# API
+
+Preparar el frontend para consumir una API REST.
+
+Centralizar la URL base mediante configuración de environment.
+
+No escribir URLs del backend directamente dentro de componentes.
+
+Ejemplo esperado:
+
+environment.apiUrl
+
+Los endpoints deberán consumirse desde servicios.
+
+Ejemplo:
+
+GET /events
+GET /events/:id
+POST /events
+PUT /events/:id
+DELETE /events/:id
+
+GET /events/:id/guests
+POST /events/:id/guests
+
+GET /public/invitations/:slug
+POST /public/invitations/:slug/rsvp
+
+No implementar endpoints ficticios que no hayan sido solicitados.
+
+# Formularios
+
+Utilizar Reactive Forms.
+
+Evitar Template Driven Forms para formularios complejos.
+
+Implementar:
+
+* Validators.
+* Mensajes claros de validación.
+* Estados touched/dirty cuando corresponda.
+* Tipado de formularios cuando sea posible.
+
+No duplicar lógica de validación.
+
+Si una validación se reutiliza, crear un validator compartido.
+
+# Routing
+
+Utilizar lazy loading para funcionalidades principales.
+
+Las páginas privadas deberán estar preparadas para utilizar AuthGuard.
+
+Separar rutas públicas y privadas.
+
+Ejemplos de rutas públicas:
+
+/login
+/register
+/invitacion/:slug
+
+Ejemplos de rutas privadas:
+
+/dashboard
+/events
+/events/new
+/events/:id
+/events/:id/guests
+
+La invitación pública no debe depender del DashboardLayout.
+
+# Estado
+
+No introducir NgRx, Redux u otra librería global de estado salvo que sea solicitada explícitamente.
+
+Para el MVP utilizar:
+
+* Signals para estado local/simple.
+* Servicios para estado compartido.
+* RxJS para flujos asíncronos.
+
+Si la complejidad futura justifica una solución global de estado, primero proponerla antes de instalarla.
+
+# Estilos
+
+Utilizar Tailwind CSS como herramienta principal de estilos.
+
+El diseño debe ser:
+
+* Mobile-first.
+* Responsive.
+* Moderno.
+* Limpio.
+* Consistente.
+* Accesible.
+
+Evitar estilos inline.
+
+Evitar duplicar grandes bloques de clases cuando puedan convertirse razonablemente en un componente reutilizable.
+
+No crear abstracciones prematuras para combinaciones pequeñas de clases Tailwind.
+
+# Responsive
+
+Todas las pantallas nuevas deben revisarse como mínimo para:
+
+* Mobile.
+* Tablet.
+* Desktop.
+
+La invitación pública tiene prioridad mobile porque la mayoría de los invitados accederán mediante un enlace compartido desde su teléfono.
+
+Evitar tablas horizontales difíciles de utilizar en dispositivos móviles.
+
+Cuando sea necesario, utilizar cards en móvil y tablas en escritorio.
+
+# Accesibilidad
+
+Utilizar HTML semántico.
+
+Los botones deben ser elementos `<button>` cuando ejecuten acciones.
+
+Los enlaces deben utilizar `<a>` o `routerLink` cuando representen navegación.
+
+Los inputs deben tener labels.
+
+Las imágenes deben tener atributos alt apropiados.
+
+Los modales deben contemplar navegación por teclado y atributos ARIA cuando corresponda.
+
+No depender únicamente del color para comunicar estados.
+
+# Invitaciones públicas
+
+Las páginas de invitaciones son una parte crítica del producto.
+
+Deben:
+
+* Tener excelente experiencia mobile.
+* Cargar rápidamente.
+* Ser visualmente atractivas.
+* Mantener buena legibilidad.
+* Permitir compartir fácilmente por WhatsApp.
+* Tener URLs mediante slug.
+
+Ejemplo:
+
+/invitacion/sofia-y-carlos
+
+Las plantillas deben recibir datos mediante modelos y no contener información del evento hardcodeada.
+
+Evitar duplicar toda la lógica para cada plantilla.
+
+Separar datos del evento y presentación visual.
+
+# Templates
+
+Las plantillas de invitación deben diseñarse para permitir múltiples diseños utilizando el mismo modelo de datos.
+
+Ejemplo conceptual:
+
+InvitationData
+|
++-- WeddingClassicTemplate
++-- WeddingModernTemplate
++-- XVElegantTemplate
++-- BirthdayKidsTemplate
+
+No crear una aplicación diferente para cada plantilla.
+
+Las plantillas deben ser componentes visuales intercambiables.
+
+# Performance
+
+Evitar:
+
+* Cálculos innecesarios en templates.
+* Suscripciones que no se limpien.
+* Imágenes excesivamente pesadas.
+* Renderizados innecesarios.
+* Requests HTTP duplicados.
+
+Utilizar lazy loading cuando corresponda.
+
+Para imágenes públicas considerar posteriormente lazy loading y optimización.
+
+# Seguridad
+
+Nunca guardar:
+
+* contraseñas
+* secretos
+* API keys privadas
+* tokens sensibles
+
+directamente en el código fuente.
+
+No confiar únicamente en validaciones del frontend.
+
+El backend será responsable de validar autorización y reglas de negocio.
+
+No utilizar `innerHTML` con contenido dinámico sin una razón y tratamiento de seguridad apropiados.
+
+# Manejo de errores
+
+Preparar la aplicación para utilizar un interceptor HTTP global.
+
+Los componentes no deben duplicar constantemente el mismo manejo de errores HTTP.
+
+Diferenciar cuando sea necesario:
+
+* errores de validación
+* errores del servidor
+* recursos no encontrados
+* errores de autenticación
+
+Mostrar mensajes comprensibles para el usuario.
+
+# Desarrollo incremental
+
+Este proyecto se construirá como MVP.
+
+Priorizar:
+
+1. Funcionalidad.
+2. Código mantenible.
+3. Experiencia de usuario.
+4. Rendimiento.
+5. Escalabilidad razonable.
+
+Evitar sobrearquitectura.
+
+No implementar funcionalidades futuras hasta que sean solicitadas.
+
+Especialmente no agregar automáticamente:
+
+* NgRx.
+* WebSockets.
+* IA.
+* QR.
+* pagos.
+* analytics.
+* notificaciones push.
+* microfrontends.
+
+# Regla crítica antes de modificar código
+
+Antes de crear o modificar código:
+
+1. Revisar los archivos relacionados existentes.
+2. Identificar componentes, modelos y servicios reutilizables.
+3. Evitar duplicar implementaciones existentes.
+4. Respetar la arquitectura actual.
+5. Realizar únicamente los cambios necesarios para la solicitud actual.
+
+No reescribir archivos completos innecesariamente.
+
+No modificar funcionalidades no relacionadas con la tarea solicitada.
+
+# Después de realizar cambios
+
+Al finalizar una tarea:
+
+1. Verificar errores de TypeScript.
+2. Verificar imports.
+3. Verificar rutas afectadas.
+4. Verificar que no exista código muerto evidente.
+5. Ejecutar build o validación equivalente cuando sea posible.
+6. Corregir errores provocados por los cambios realizados.
+
+Después entregar un resumen breve indicando:
+
+* Archivos creados.
+* Archivos modificados.
+* Funcionalidad implementada.
+* Decisiones técnicas relevantes.
+* Errores o pendientes encontrados.
+
+No generar documentación extensa salvo que sea solicitada.
+
+# Principio general
+
+Antes de escribir código nuevo, preguntarse:
+
+"¿Ya existe algo en este proyecto que pueda reutilizar?"
+
+Priorizar código simple, legible, tipado y mantenible sobre soluciones innecesariamente complejas.
