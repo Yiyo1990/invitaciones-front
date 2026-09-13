@@ -531,3 +531,20 @@ Antes de escribir código nuevo, preguntarse:
 "¿Ya existe algo en este proyecto que pueda reutilizar?"
 
 Priorizar código simple, legible, tipado y mantenible sobre soluciones innecesariamente complejas.
+
+
+# Protección de funcionalidad existente
+
+Nunca reemplazar componentes funcionales existentes por placeholders.
+
+Antes de modificar un archivo existente:
+
+1. Leer completamente el archivo.
+2. Identificar su funcionalidad actual.
+3. Preservar toda funcionalidad no relacionada con la tarea actual.
+4. No eliminar formularios, lógica, modelos, mocks, estilos o rutas existentes sin autorización explícita.
+5. Si una solicitud de arquitectura entra en conflicto con funcionalidad existente, adaptar la arquitectura alrededor del código existente.
+
+Cuando se solicite crear estructura o placeholders:
+- Crear placeholders únicamente para funcionalidades que todavía no existan.
+- Si el componente ya existe, reutilizarlo.
