@@ -1,0 +1,49 @@
+<nav aria-label="Progreso del wizard">
+  <!-- Mobile: simple progress bar -->
+  <div class="sm:hidden">
+    <div class="flex items-center justify-between text-xs font-medium text-slate-500">
+      <span>Paso {{ currentStep() }} de {{ steps().length }}</span>
+      <span>{{ steps()[currentStep() - 1].label }}</span>
+    </div>
+    <div class="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
+      <div
+        class="h-full rounded-full bg-indigo-600 transition-all duration-300"
+        [style.width.%]="(currentStep() / steps().length) * 100"
+      ></div>
+    </div>
+  </div>
+
+  <!-- Desktop: step indicators -->
+  <ol class="hidden sm:flex sm:items-center sm:justify-between">
+    @for (step of steps(); track step.label; let i = $index) {
+      <li class="flex flex-1 items-center" [attr.aria-current]="i + 1 === currentStep() ? 'step' : null">
+        <div class="flex flex-col items-center gap-2">
+          <div
+            class="flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold transition-colors"
+            [class.bg-indigo-600]="i + 1 <= currentStep()"
+            [class.text-white]="i + 1 <= currentStep()"
+            [class.bg-slate-100]="i + 1 > currentStep()"
+            [class.text-slate-500]="i + 1 > currentStep()"
+          >
+            {{ i + 1 }}
+          </div>
+          <span
+            class="text-xs font-medium"
+            [class.text-indigo-600]="i + 1 === currentStep()"
+            [class.text-slate-900]="i + 1 < currentStep()"
+            [class.text-slate-400]="i + 1 > currentStep()"
+          >
+            {{ step.label }}
+          </span>
+        </div>
+        @if (i < steps().length - 1) {
+          <div
+            class="mx-2 mb-6 h-0.5 flex-1 transition-colors"
+            [class.bg-indigo-600]="i + 1 < currentStep()"
+            [class.bg-slate-200]="i + 1 >= currentStep()"
+          ></div>
+        }
+      </li>
+    }
+  </ol>
+</nav>

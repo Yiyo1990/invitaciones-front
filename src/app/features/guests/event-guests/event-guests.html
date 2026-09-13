@@ -1,0 +1,175 @@
+@if (page() === undefined) {
+  <div class="flex min-h-[40vh] items-center justify-center" role="status" aria-live="polite">
+    <div class="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-indigo-600" aria-hidden="true"></div>
+    <span class="sr-only">Cargando invitados…</span>
+  </div>
+} @else {
+  @let data = page()!;
+  @let stats = metrics();
+
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div>
+        <a
+          [routerLink]="['/events', data.eventId]"
+          class="inline-flex items-center gap-1 text-sm font-medium text-slate-500 transition-colors hover:text-slate-800"
+        >
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+          </svg>
+          Volver al evento
+        </a>
+        <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Invitados</h1>
+        <p class="mt-1 text-sm text-slate-600 sm:text-base">{{ data.eventName }}</p>
+      </div>
+
+      <button
+        type="button"
+        (click)="onAddGuest()"
+        class="inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-500"
+      >
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+        Agregar invitado
+      </button>
+    </div>
+
+    <!-- Metrics -->
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <app-stat-card label="Total invitados" [value]="stats.totalGuests" icon="guests" />
+      <app-stat-card label="Confirmados" [value]="stats.confirmed" icon="confirmed" />
+      <app-stat-card label="No asistirán" [value]="stats.declined" icon="declined" />
+      <app-stat-card label="Pendientes" [value]="stats.pending" icon="pending" />
+      <app-stat-card label="Personas confirmadas" [value]="stats.confirmedPeople" icon="people" />
+    </div>
+
+    <!-- Filters -->
+    <div class="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
+      <div class="relative flex-1">
+        <svg
+          class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+        </svg>
+        <label for="guest-search" class="sr-only">Buscar invitados</label>
+        <input
+          id="guest-search"
+          type="search"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="onSearch($event)"
+          placeholder="Buscar por nombre o teléfono..."
+          class="w-full rounded-xl border border-slate-300 py-2.5 pl-10 pr-4 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+        />
+      </div>
+
+      <div class="sm:w-52">
+        <label for="guest-status-filter" class="sr-only">Filtrar por estado</label>
+        <select
+          id="guest-status-filter"
+          [ngModel]="statusFilter()"
+          (ngModelChange)="onStatusFilter($event)"
+          class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+        >
+          <option value="ALL">Todos los estados</option>
+          <option [value]="GuestStatus.Pending">{{ statusLabels[GuestStatus.Pending] }}</option>
+          <option [value]="GuestStatus.Confirmed">{{ statusLabels[GuestStatus.Confirmed] }}</option>
+          <option [value]="GuestStatus.Declined">{{ statusLabels[GuestStatus.Declined] }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Mobile cards -->
+    <div class="space-y-3 md:hidden">
+      @if (filteredGuests().length === 0) {
+        <div class="rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-10 text-center">
+          <p class="text-sm font-medium text-slate-900">No hay invitados</p>
+          <p class="mt-1 text-sm text-slate-500">Prueba con otro filtro o agrega un nuevo invitado.</p>
+        </div>
+      } @else {
+        @for (guest of filteredGuests(); track guest.id) {
+          <app-guest-card
+            [guest]="guest"
+            (edit)="onEditGuest($event)"
+            (remove)="onRemoveGuest($event)"
+          />
+        }
+      }
+    </div>
+
+    <!-- Desktop table -->
+    <div class="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm md:block">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+          <thead class="bg-slate-50">
+            <tr>
+              <th scope="col" class="px-5 py-3.5 font-semibold text-slate-700">Nombre</th>
+              <th scope="col" class="px-5 py-3.5 font-semibold text-slate-700">Teléfono</th>
+              <th scope="col" class="px-5 py-3.5 font-semibold text-slate-700">Estado</th>
+              <th scope="col" class="px-5 py-3.5 font-semibold text-slate-700">Acompañantes</th>
+              <th scope="col" class="px-5 py-3.5 font-semibold text-slate-700">Fecha de confirmación</th>
+              <th scope="col" class="px-5 py-3.5 font-semibold text-slate-700">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @if (filteredGuests().length === 0) {
+              <tr>
+                <td colspan="6" class="px-5 py-12 text-center text-slate-500">
+                  No hay invitados que coincidan con tu búsqueda.
+                </td>
+              </tr>
+            } @else {
+              @for (guest of filteredGuests(); track guest.id) {
+                <tr class="transition-colors hover:bg-slate-50/80">
+                  <td class="whitespace-nowrap px-5 py-4 font-medium text-slate-900">
+                    {{ guest.fullName }}
+                  </td>
+                  <td class="whitespace-nowrap px-5 py-4 text-slate-600">
+                    {{ guest.phone || '—' }}
+                  </td>
+                  <td class="whitespace-nowrap px-5 py-4">
+                    <app-guest-status-badge [status]="guest.status" />
+                  </td>
+                  <td class="whitespace-nowrap px-5 py-4 text-slate-600">
+                    {{ guest.companions }}
+                  </td>
+                  <td class="whitespace-nowrap px-5 py-4 text-slate-600">
+                    @if (guest.confirmedAt) {
+                      {{ guest.confirmedAt | date: 'd MMM y, HH:mm' : undefined : 'es' }}
+                    } @else {
+                      —
+                    }
+                  </td>
+                  <td class="whitespace-nowrap px-5 py-4">
+                    <div class="flex items-center gap-2">
+                      <button
+                        type="button"
+                        (click)="onEditGuest(guest)"
+                        class="rounded-lg px-2.5 py-1.5 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-50"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        (click)="onRemoveGuest(guest)"
+                        class="rounded-lg px-2.5 py-1.5 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-50"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,25 @@
+<div class="min-h-screen bg-slate-50">
+  @if (sidebarOpen()) {
+    <button
+      type="button"
+      class="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm transition-opacity lg:hidden"
+      (click)="closeSidebar()"
+      aria-label="Cerrar menú"
+    ></button>
+  }
+
+  <app-header class="lg:hidden" (menuToggle)="toggleSidebar()" />
+
+  <app-sidebar
+    [isOpen]="sidebarOpen()"
+    [userName]="userName"
+    (closeSidebar)="closeSidebar()"
+    (logout)="onLogout()"
+  />
+
+  <div class="lg:pl-72">
+    <main class="mx-auto min-h-screen max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+      <router-outlet />
+    </main>
+  </div>
+</div>
