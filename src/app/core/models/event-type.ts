@@ -1,11 +1,13 @@
 export enum EventType {
-  Wedding = 'wedding',
-  Quinceanera = 'quinceanera',
-  Birthday = 'birthday',
-  BabyShower = 'baby_shower',
-  Baptism = 'baptism',
-  Graduation = 'graduation',
-  Corporate = 'corporate',
+  Wedding = 'WEDDING',
+  Quinceanera = 'XV_YEARS',
+  Birthday = 'BIRTHDAY',
+  BabyShower = 'BABY_SHOWER',
+  Baptism = 'BAPTISM',
+  Graduation = 'GRADUATION',
+  Anniversary = 'ANNIVERSARY',
+  Corporate = 'CORPORATE',
+  Other = 'OTHER',
 }
 
 export interface EventTypeOption {
@@ -53,10 +55,22 @@ export const EVENT_TYPE_OPTIONS: EventTypeOption[] = [
     icon: '🎓',
   },
   {
+    value: EventType.Anniversary,
+    label: 'Aniversario',
+    description: 'Celebración de aniversario',
+    icon: '🥂',
+  },
+  {
     value: EventType.Corporate,
     label: 'Evento empresarial',
     description: 'Eventos corporativos y networking',
     icon: '🏢',
+  },
+  {
+    value: EventType.Other,
+    label: 'Otro',
+    description: 'Otro tipo de evento',
+    icon: '✨',
   },
 ];
 

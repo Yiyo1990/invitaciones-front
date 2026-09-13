@@ -1,9 +1,10 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { catchError, map, of, switchMap } from 'rxjs';
 
 import { CreateEventForm } from '../../../../core/models/create-event-form';
+import { getApiErrorMessage } from '../../../../core/utils/api-error.util';
 import { EventFormComponent } from '../../components/event-form/event-form';
 import { EventService } from '../../services/event.service';
 import { TemplateService } from '../../../templates/services/template.service';
@@ -20,8 +21,12 @@ export class EditEventPage {
   private readonly router = inject(Router);
   private readonly eventService = inject(EventService);
   private readonly templateService = inject(TemplateService);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly saveSuccess = signal(false);
+  protected readonly submitting = signal(false);
+  protected readonly formError = signal<string | null>(null);
+  protected readonly loadError = signal<string | null>(null);
 
   private readonly eventId$ = this.route.paramMap.pipe(map((params) => params.get('id') ?? ''));
 
@@ -45,7 +50,10 @@ export class EditEventPage {
               ),
             ),
           ),
-          catchError(() => of(null)),
+          catchError((error: unknown) => {
+            this.loadError.set(getApiErrorMessage(error) || 'No se pudo cargar el evento.');
+            return of(null);
+          }),
         );
       }),
     ),
@@ -58,24 +66,27 @@ export class EditEventPage {
 
   protected onSubmit(payload: CreateEventForm): void {
     const event = this.event();
-    if (!event) {
+    if (!event || this.submitting()) {
       return;
     }
 
-    const updated = {
-      id: event.id,
-      slug: event.slug,
-      status: event.status,
-      ...payload,
-    };
+    this.submitting.set(true);
+    this.formError.set(null);
 
-    console.log('Update event payload:', updated);
-
-    this.saveSuccess.set(true);
-
-    setTimeout(() => {
-      void this.router.navigate(['/events', event.id]);
-    }, 800);
+    this.eventService
+      .updateFromForm(event.id, payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.submitting.set(false);
+          this.saveSuccess.set(true);
+          void this.router.navigate(['/events', event.id]);
+        },
+        error: (error: unknown) => {
+          this.submitting.set(false);
+          this.formError.set(getApiErrorMessage(error) || 'No se pudieron guardar los cambios.');
+        },
+      });
   }
 
   protected onCancel(): void {

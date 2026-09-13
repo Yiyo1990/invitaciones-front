@@ -1,17 +1,11 @@
 import { User } from './user';
 
+/** Session-oriented auth result used by the frontend after mapping the API response. */
 export interface AuthResponse {
   accessToken: string;
+  tokenType: string;
+  expiresIn: string;
   user: User;
 }
 
-export interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-export interface RegisterPayload {
-  name: string;
-  email: string;
-  password: string;
-}
+export type { LoginRequest, RegisterRequest } from './auth-api';

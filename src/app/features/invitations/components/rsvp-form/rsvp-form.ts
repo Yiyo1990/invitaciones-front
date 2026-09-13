@@ -1,12 +1,10 @@
 import { Component, DestroyRef, inject, input, OnInit, output, signal } from '@angular/core';
-import {
-  FormBuilder,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { AttendanceResponse, RsvpForm } from '../../../../core/models/rsvp-form';
+import { getApiErrorMessage } from '../../../../core/utils/api-error.util';
+import { InvitationService } from '../../services/invitation.service';
 
 @Component({
   selector: 'app-rsvp-form',
@@ -16,21 +14,25 @@ import { AttendanceResponse, RsvpForm } from '../../../../core/models/rsvp-form'
 })
 export class RsvpFormComponent implements OnInit {
   invitationSlug = input.required<string>();
+  guestCode = input.required<string>();
 
   submitted = output<RsvpForm>();
   cancelled = output<void>();
 
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly invitationService = inject(InvitationService);
 
   protected readonly AttendanceResponse = AttendanceResponse;
   protected readonly submittedSuccessfully = signal(false);
+  protected readonly submitting = signal(false);
+  protected readonly submitError = signal<string | null>(null);
 
   protected readonly form = this.fb.group({
     fullName: ['', [Validators.required, Validators.maxLength(120)]],
     attendance: ['' as AttendanceResponse | '', Validators.required],
-    guestCount: [1 as number | null, [Validators.required, Validators.min(1), Validators.max(10)]],
-    message: ['', [Validators.maxLength(250)]],
+    guestCount: [1 as number | null, [Validators.required, Validators.min(1), Validators.max(20)]],
+    message: ['', [Validators.maxLength(1000)]],
   });
 
   ngOnInit(): void {
@@ -54,7 +56,7 @@ export class RsvpFormComponent implements OnInit {
   }
 
   protected onSubmit(): void {
-    if (this.form.invalid) {
+    if (this.form.invalid || this.submitting()) {
       this.form.markAllAsTouched();
       return;
     }
@@ -67,13 +69,35 @@ export class RsvpFormComponent implements OnInit {
       message: raw.message?.trim() ?? '',
     };
 
-    console.log('RSVP submission:', {
-      slug: this.invitationSlug(),
-      ...payload,
-    });
+    const status = payload.attendance === AttendanceResponse.Yes ? 'CONFIRMED' : 'DECLINED';
+    const confirmedCompanions =
+      status === 'CONFIRMED' && payload.guestCount != null
+        ? Math.max(payload.guestCount - 1, 0)
+        : 0;
 
-    this.submitted.emit(payload);
-    this.submittedSuccessfully.set(true);
+    this.submitting.set(true);
+    this.submitError.set(null);
+
+    this.invitationService
+      .submitRsvp(this.guestCode(), {
+        status,
+        confirmedCompanions,
+        message: payload.message || null,
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.submitting.set(false);
+          this.submitted.emit(payload);
+          this.submittedSuccessfully.set(true);
+        },
+        error: (error: unknown) => {
+          this.submitting.set(false);
+          this.submitError.set(
+            getApiErrorMessage(error) || 'No se pudo enviar tu confirmación.',
+          );
+        },
+      });
   }
 
   protected onCancel(): void {
@@ -90,7 +114,7 @@ export class RsvpFormComponent implements OnInit {
       return;
     }
 
-    guestCount?.setValidators([Validators.required, Validators.min(1), Validators.max(10)]);
+    guestCount?.setValidators([Validators.required, Validators.min(1), Validators.max(20)]);
     if (guestCount?.value === null) {
       guestCount.setValue(1);
     }

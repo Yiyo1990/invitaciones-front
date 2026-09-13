@@ -6,6 +6,19 @@
     </p>
   </div>
 
+  @if (formError()) {
+    <div
+      class="mb-6 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700"
+      role="alert"
+    >
+      {{ formError() }}
+    </div>
+  }
+
+  @if (submitting()) {
+    <p class="mb-4 text-sm text-slate-500" role="status">Guardando evento…</p>
+  }
+
   <app-event-form
     mode="create"
     [initialValue]="initialValue()"

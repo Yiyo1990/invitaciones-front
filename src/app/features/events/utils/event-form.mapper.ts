@@ -38,7 +38,7 @@ export function resolveTemplateId(
     }
   }
 
-  return templates[0]?.id ?? '';
+  return '';
 }
 
 export function mapEventDetailToFormValue(

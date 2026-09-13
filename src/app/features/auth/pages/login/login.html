@@ -47,12 +47,19 @@
         <p class="mt-1.5 text-sm text-red-600" role="alert">
           @if (form.controls.password.hasError('required')) {
             La contraseña es obligatoria
-          } @else if (form.controls.password.hasError('minlength')) {
-            La contraseña debe tener al menos 6 caracteres
           }
         </p>
       }
     </div>
+
+    @if (formError()) {
+      <div
+        class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700"
+        role="alert"
+      >
+        {{ formError() }}
+      </div>
+    }
 
     <button
       type="submit"

@@ -115,19 +115,27 @@
       }
     </div>
 
+    @if (submitError()) {
+      <p class="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+        {{ submitError() }}
+      </p>
+    }
+
     <div class="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
       <button
         type="button"
         (click)="onCancel()"
-        class="inline-flex items-center justify-center rounded-full border border-stone-200 px-6 py-2.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50"
+        [disabled]="submitting()"
+        class="inline-flex items-center justify-center rounded-full border border-stone-200 px-6 py-2.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50 disabled:opacity-60"
       >
         Cancelar
       </button>
       <button
         type="submit"
-        class="inline-flex items-center justify-center rounded-full bg-stone-800 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-stone-700"
+        [disabled]="submitting()"
+        class="inline-flex items-center justify-center rounded-full bg-stone-800 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-stone-700 disabled:opacity-60"
       >
-        Enviar confirmación
+        {{ submitting() ? 'Enviando…' : 'Enviar confirmación' }}
       </button>
     </div>
   </form>

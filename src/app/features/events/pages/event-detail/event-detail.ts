@@ -2,11 +2,12 @@ import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { forkJoin, map, of, switchMap } from 'rxjs';
+import { catchError, forkJoin, map, of, switchMap } from 'rxjs';
 
 import { EventStatus } from '../../../../core/models/event-status';
 import { EVENT_TYPE_LABELS } from '../../../../core/models/event-type';
 import { Guest } from '../../../../core/models/guest';
+import { getApiErrorMessage } from '../../../../core/utils/api-error.util';
 import { EventStatusBadge } from '../../../../shared/components/event-status-badge/event-status-badge';
 import { StatCard } from '../../../../shared/components/stat-card/stat-card';
 import { GuestStatusBadge } from '../../../guests/components/guest-status-badge/guest-status-badge';
@@ -27,6 +28,7 @@ export class EventDetailPage {
   protected readonly typeLabels = EVENT_TYPE_LABELS;
 
   protected readonly linkCopied = signal(false);
+  protected readonly loadError = signal<string | null>(null);
   private copyResetTimer: ReturnType<typeof setTimeout> | null = null;
 
   private readonly eventId$ = this.route.paramMap.pipe(map((params) => params.get('id') ?? ''));
@@ -34,6 +36,8 @@ export class EventDetailPage {
   private readonly detailData = toSignal(
     this.eventId$.pipe(
       switchMap((id) => {
+        this.loadError.set(null);
+
         if (!id) {
           return of({ event: null, guests: [] as Guest[] });
         }
@@ -46,6 +50,12 @@ export class EventDetailPage {
             event,
             guests: guestsPage.guests,
           })),
+          catchError((error: unknown) => {
+            this.loadError.set(
+              getApiErrorMessage(error) || 'No se pudo cargar el evento.',
+            );
+            return of({ event: null, guests: [] as Guest[] });
+          }),
         );
       }),
     ),
@@ -71,7 +81,7 @@ export class EventDetailPage {
   });
 
   protected readonly invitationPublished = computed(
-    () => this.event()?.status === EventStatus.Published || this.event()?.status === EventStatus.Finished,
+    () => this.event()?.status === EventStatus.Published,
   );
 
   protected peopleCount(guest: Guest): number {

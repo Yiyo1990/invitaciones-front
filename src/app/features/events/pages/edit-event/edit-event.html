@@ -5,8 +5,12 @@
   </div>
 } @else if (!event() || !formValue()) {
   <div class="rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-12 text-center">
-    <h1 class="text-lg font-semibold text-slate-900">Evento no encontrado</h1>
-    <p class="mt-1 text-sm text-slate-500">No pudimos cargar la información para editar.</p>
+    <h1 class="text-lg font-semibold text-slate-900">
+      {{ loadError() ? 'No se pudo cargar el evento' : 'Evento no encontrado' }}
+    </h1>
+    <p class="mt-1 text-sm text-slate-500">
+      {{ loadError() || 'No pudimos cargar la información para editar.' }}
+    </p>
     <a
       routerLink="/events"
       class="mt-4 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-500"
@@ -37,6 +41,15 @@
         Actualiza la información de tu evento.
       </p>
     </div>
+
+    @if (formError()) {
+      <div
+        class="mb-6 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700"
+        role="alert"
+      >
+        {{ formError() }}
+      </div>
+    }
 
     @if (saveSuccess()) {
       <div

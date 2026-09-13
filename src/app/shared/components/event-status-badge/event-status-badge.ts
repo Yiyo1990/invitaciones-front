@@ -18,7 +18,8 @@ export class EventStatusBadge {
     switch (this.status()) {
       case EventStatus.Published:
         return 'bg-emerald-50 text-emerald-700';
-      case EventStatus.Finished:
+      case EventStatus.Completed:
+      case EventStatus.Cancelled:
         return 'bg-slate-100 text-slate-500';
       case EventStatus.Draft:
       default:

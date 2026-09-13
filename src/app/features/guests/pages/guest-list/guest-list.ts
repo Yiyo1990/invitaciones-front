@@ -1,12 +1,13 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { map, switchMap } from 'rxjs';
+import { catchError, combineLatest, map, of, switchMap } from 'rxjs';
 
 import { Guest, GuestStatusFilter } from '../../../../core/models/guest';
 import { GuestStatus, GUEST_STATUS_LABELS } from '../../../../core/models/guest-status';
+import { getApiErrorMessage } from '../../../../core/utils/api-error.util';
 import { StatCard } from '../../../../shared/components/stat-card/stat-card';
 import { GuestCard } from '../../components/guest-card/guest-card';
 import { GuestStatusBadge } from '../../components/guest-status-badge/guest-status-badge';
@@ -28,19 +29,42 @@ import { GuestService } from '../../services/guest.service';
 export class GuestListPage {
   private readonly route = inject(ActivatedRoute);
   private readonly guestService = inject(GuestService);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly GuestStatus = GuestStatus;
   protected readonly statusLabels = GUEST_STATUS_LABELS;
 
   protected readonly searchQuery = signal('');
   protected readonly statusFilter = signal<GuestStatusFilter>('ALL');
+  protected readonly actionError = signal<string | null>(null);
+  private readonly reloadToken = signal(0);
 
   private readonly eventId$ = this.route.paramMap.pipe(map((params) => params.get('id') ?? ''));
 
   protected readonly page = toSignal(
-    this.eventId$.pipe(switchMap((eventId) => this.guestService.getByEventId(eventId))),
+    combineLatest([this.eventId$, toObservable(this.reloadToken)]).pipe(
+      switchMap(([eventId]) => {
+        if (!eventId) {
+          return of({ eventId: '', eventName: 'Evento', guests: [] as Guest[] });
+        }
+
+        return this.guestService.getByEventId(eventId).pipe(
+          catchError((error: unknown) => {
+            this.actionError.set(
+              getApiErrorMessage(error) || 'No se pudieron cargar los invitados.',
+            );
+            return of({
+              eventId,
+              eventName: 'Evento',
+              guests: [] as Guest[],
+            });
+          }),
+        );
+      }),
+    ),
   );
 
+  protected readonly loading = computed(() => this.page() === undefined);
   protected readonly metrics = computed(() => {
     const guests = this.page()?.guests ?? [];
     return this.guestService.computeMetrics(guests);
@@ -62,14 +86,79 @@ export class GuestListPage {
   }
 
   protected onAddGuest(): void {
-    console.log('Add guest for event:', this.page()?.eventId);
+    const eventId = this.page()?.eventId;
+    if (!eventId) {
+      return;
+    }
+
+    const firstName = window.prompt('Nombre del invitado');
+    if (!firstName?.trim()) {
+      return;
+    }
+
+    const lastName = window.prompt('Apellido (opcional)') ?? undefined;
+    this.actionError.set(null);
+
+    this.guestService
+      .create(eventId, {
+        firstName: firstName.trim(),
+        ...(lastName?.trim() ? { lastName: lastName.trim() } : {}),
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => this.reloadToken.update((value) => value + 1),
+        error: (error: unknown) => {
+          this.actionError.set(getApiErrorMessage(error) || 'No se pudo agregar el invitado.');
+        },
+      });
   }
 
   protected onEditGuest(guest: Guest): void {
-    console.log('Edit guest:', guest);
+    const eventId = this.page()?.eventId;
+    if (!eventId) {
+      return;
+    }
+
+    const firstName = window.prompt(
+      'Nombre del invitado',
+      guest.fullName.split(' ')[0] ?? guest.fullName,
+    );
+    if (!firstName?.trim()) {
+      return;
+    }
+
+    this.actionError.set(null);
+    this.guestService
+      .update(eventId, guest.id, { firstName: firstName.trim() })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => this.reloadToken.update((value) => value + 1),
+        error: (error: unknown) => {
+          this.actionError.set(getApiErrorMessage(error) || 'No se pudo actualizar el invitado.');
+        },
+      });
   }
 
   protected onRemoveGuest(guest: Guest): void {
-    console.log('Remove guest:', guest);
+    const eventId = this.page()?.eventId;
+    if (!eventId) {
+      return;
+    }
+
+    const confirmed = window.confirm(`¿Eliminar a ${guest.fullName}?`);
+    if (!confirmed) {
+      return;
+    }
+
+    this.actionError.set(null);
+    this.guestService
+      .remove(eventId, guest.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => this.reloadToken.update((value) => value + 1),
+        error: (error: unknown) => {
+          this.actionError.set(getApiErrorMessage(error) || 'No se pudo eliminar el invitado.');
+        },
+      });
   }
 }

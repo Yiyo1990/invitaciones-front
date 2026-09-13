@@ -1,5 +1,4 @@
 <div class="space-y-8">
-  <!-- Header -->
   <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div>
       <p class="mt-2 max-w-xl text-sm text-slate-600 sm:text-base">
@@ -17,46 +16,62 @@
     </a>
   </div>
 
-  <!-- Stats -->
-  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-    <app-stat-card label="Eventos activos" [value]="metrics().activeEvents" icon="events" />
-    <app-stat-card label="Invitados totales" [value]="metrics().totalGuests" icon="guests" />
-    <app-stat-card label="Confirmados" [value]="metrics().confirmedGuests" icon="confirmed" />
-    <app-stat-card label="Pendientes" [value]="metrics().pendingGuests" icon="pending" />
-  </div>
-
-  <!-- Events list -->
-  <section>
-    <div class="mb-5 flex items-center justify-between gap-4">
-      <h2 class="text-lg font-semibold text-slate-900">Mis eventos</h2>
-      <a
-        routerLink="/events"
-        class="text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-500"
+  @if (loading()) {
+    <div class="flex min-h-[30vh] items-center justify-center" role="status" aria-live="polite">
+      <div class="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-indigo-600" aria-hidden="true"></div>
+      <span class="sr-only">Cargando dashboard…</span>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="rounded-2xl border border-red-100 bg-red-50 px-6 py-10 text-center">
+      <p class="text-sm font-medium text-red-800">{{ errorMessage() }}</p>
+      <button
+        type="button"
+        (click)="retry()"
+        class="mt-4 inline-flex items-center rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-500"
       >
-        Ver todos
-      </a>
+        Reintentar
+      </button>
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <app-stat-card label="Eventos activos" [value]="metrics().activeEvents" icon="events" />
+      <app-stat-card label="Invitados totales" [value]="metrics().totalGuests" icon="guests" />
+      <app-stat-card label="Confirmados" [value]="metrics().confirmedGuests" icon="confirmed" />
+      <app-stat-card label="Pendientes" [value]="metrics().pendingGuests" icon="pending" />
     </div>
 
-    @if (events().length > 0) {
-      <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-        @for (event of events(); track event.id) {
-          <app-event-card [event]="event" />
-        }
-      </div>
-    } @else {
-      <div class="rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-12 text-center">
-        <p class="text-sm font-medium text-slate-900">Aún no tienes eventos</p>
-        <p class="mt-1 text-sm text-slate-500">Crea tu primera invitación para comenzar.</p>
+    <section>
+      <div class="mb-5 flex items-center justify-between gap-4">
+        <h2 class="text-lg font-semibold text-slate-900">Mis eventos</h2>
         <a
-          routerLink="/events/new"
-          class="mt-4 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-500"
+          routerLink="/events"
+          class="text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-500"
         >
-          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-          Crear invitación
+          Ver todos
         </a>
       </div>
-    }
-  </section>
+
+      @if (events().length > 0) {
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+          @for (event of events(); track event.id) {
+            <app-event-card [event]="event" />
+          }
+        </div>
+      } @else {
+        <div class="rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-12 text-center">
+          <p class="text-sm font-medium text-slate-900">Aún no tienes eventos</p>
+          <p class="mt-1 text-sm text-slate-500">Crea tu primera invitación para comenzar.</p>
+          <a
+            routerLink="/events/new"
+            class="mt-4 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-500"
+          >
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            Crear invitación
+          </a>
+        </div>
+      }
+    </section>
+  }
 </div>

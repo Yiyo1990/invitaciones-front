@@ -14,7 +14,7 @@ export interface TemplateFilterOptions {
 @Injectable({ providedIn: 'root' })
 export class TemplateService {
   getAll(): Observable<InvitationTemplate[]> {
-    // Simulates a future HTTP call; replace with HttpClient when API is ready.
+    // No NestJS templates catalog endpoint exists yet; keep local catalog.
     return of(INVITATION_TEMPLATES_MOCK).pipe(delay(0));
   }
 

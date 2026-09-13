@@ -1,9 +1,11 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../../core/services/auth.service';
+import { getApiErrorMessage } from '../../../../core/utils/api-error.util';
 
 @Component({
   selector: 'app-login-page',
@@ -20,10 +22,11 @@ export class LoginPage {
 
   protected readonly loading = signal(false);
   protected readonly submitted = signal(false);
+  protected readonly formError = signal<string | null>(null);
 
   protected readonly form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]],
+    password: ['', [Validators.required]],
   });
 
   protected isInvalid(field: 'email' | 'password'): boolean {
@@ -33,6 +36,7 @@ export class LoginPage {
 
   protected onSubmit(): void {
     this.submitted.set(true);
+    this.formError.set(null);
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -54,10 +58,28 @@ export class LoginPage {
           this.loading.set(false);
           void this.router.navigateByUrl(this.resolveReturnUrl());
         },
-        error: () => {
+        error: (error: unknown) => {
           this.loading.set(false);
+          this.formError.set(this.resolveLoginError(error));
         },
       });
+  }
+
+  private resolveLoginError(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      if (error.status === 401) {
+        return 'Correo o contraseña incorrectos.';
+      }
+      if (error.status === 403) {
+        return getApiErrorMessage(error) || 'Tu cuenta está desactivada.';
+      }
+      if (error.status === 0) {
+        return 'No se pudo conectar con el servidor. Intenta de nuevo más tarde.';
+      }
+    }
+
+    const message = getApiErrorMessage(error);
+    return message || 'No se pudo iniciar sesión. Intenta de nuevo.';
   }
 
   private resolveReturnUrl(): string {

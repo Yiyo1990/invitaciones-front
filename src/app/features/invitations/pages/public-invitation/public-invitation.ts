@@ -1,9 +1,10 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import { map, switchMap } from 'rxjs';
+import { catchError, combineLatest, map, of, switchMap } from 'rxjs';
 
+import { getApiErrorMessage } from '../../../../core/utils/api-error.util';
 import { Modal } from '../../../../shared/components/modal/modal';
 import { InvitationCountdown } from '../../components/invitation-countdown/invitation-countdown';
 import { InvitationVenue } from '../../components/invitation-venue/invitation-venue';
@@ -21,15 +22,44 @@ export class PublicInvitationPage {
   private readonly invitationService = inject(InvitationService);
 
   protected readonly rsvpModalOpen = signal(false);
+  protected readonly loadError = signal<string | null>(null);
+
+  private readonly routeData$ = combineLatest([
+    this.route.paramMap.pipe(map((params) => params.get('slug') ?? '')),
+    this.route.queryParamMap.pipe(map((params) => params.get('guest')?.trim() || null)),
+  ]);
 
   protected readonly invitation = toSignal(
-    this.route.paramMap.pipe(
-      map((params) => params.get('slug') ?? ''),
-      switchMap((slug) => this.invitationService.getBySlug(slug)),
+    this.routeData$.pipe(
+      switchMap(([slug]) => {
+        this.loadError.set(null);
+        if (!slug) {
+          return of(null);
+        }
+
+        return this.invitationService.getBySlug(slug).pipe(
+          catchError((error: unknown) => {
+            this.loadError.set(
+              getApiErrorMessage(error) || 'No se pudo cargar la invitación.',
+            );
+            return of(null);
+          }),
+        );
+      }),
     ),
   );
 
+  protected readonly guestCode = toSignal(
+    this.route.queryParamMap.pipe(map((params) => params.get('guest')?.trim() || null)),
+    { initialValue: null },
+  );
+
+  protected readonly canRsvp = computed(() => !!this.guestCode());
+
   protected openRsvpModal(): void {
+    if (!this.canRsvp()) {
+      return;
+    }
     this.rsvpModalOpen.set(true);
   }
 
