@@ -9,6 +9,8 @@ import { EVENT_STATUS_LABELS, EventStatus } from '../../../core/models/event-sta
 })
 export class EventStatusBadge {
   status = input.required<EventStatus>();
+  /** When true, badge is absolutely positioned (event cards). */
+  overlay = input(true);
 
   protected readonly labels = EVENT_STATUS_LABELS;
 
@@ -22,5 +24,10 @@ export class EventStatusBadge {
       default:
         return 'bg-slate-100 text-slate-700';
     }
+  }
+
+  hostClasses(): string {
+    const position = this.overlay() ? 'absolute right-3 top-3' : 'inline-flex';
+    return `${position} ${this.badgeClasses()}`;
   }
 }

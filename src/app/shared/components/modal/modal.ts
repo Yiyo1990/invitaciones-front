@@ -9,6 +9,8 @@ import {
   output,
 } from '@angular/core';
 
+export type ModalSize = 'md' | 'lg' | 'xl';
+
 @Component({
   selector: 'app-modal',
   templateUrl: './modal.html',
@@ -22,6 +24,7 @@ export class Modal {
   title = input('');
   closeOnOverlay = input(true);
   ariaLabel = input('Diálogo');
+  size = input<ModalSize>('lg');
 
   closed = output<void>();
 

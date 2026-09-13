@@ -12,7 +12,8 @@
 
   <app-sidebar
     [isOpen]="sidebarOpen()"
-    [userName]="userName"
+    [userName]="currentUser()?.name ?? 'Usuario'"
+    [userEmail]="currentUser()?.email ?? ''"
     (closeSidebar)="closeSidebar()"
     (logout)="onLogout()"
   />

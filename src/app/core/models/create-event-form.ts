@@ -8,5 +8,9 @@ export interface CreateEventForm {
   eventTime: string;
   venueName: string;
   venueAddress: string;
+  dressCode: string;
   templateId: string;
 }
+
+/** Shared form value for create and edit flows. */
+export type EventFormValue = CreateEventForm;

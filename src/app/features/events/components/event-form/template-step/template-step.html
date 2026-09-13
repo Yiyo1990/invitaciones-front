@@ -21,7 +21,7 @@
         </div>
         <div class="p-4">
           <h3 class="font-semibold text-slate-900">{{ template.name }}</h3>
-          <p class="mt-0.5 text-sm text-slate-500">{{ template.category }}</p>
+          <p class="mt-0.5 text-sm text-slate-500">{{ typeLabels[template.category] }}</p>
           <button
             type="button"
             (click)="selectTemplate(template.id)"

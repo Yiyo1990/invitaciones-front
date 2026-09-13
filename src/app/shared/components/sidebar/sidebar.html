@@ -76,7 +76,11 @@
       </div>
       <div class="min-w-0 flex-1">
         <p class="truncate text-sm font-medium text-slate-900">{{ userName() }}</p>
-        <p class="truncate text-xs text-slate-500">Cuenta personal</p>
+        @if (userEmail()) {
+          <p class="truncate text-xs text-slate-500">{{ userEmail() }}</p>
+        } @else {
+          <p class="truncate text-xs text-slate-500">Cuenta personal</p>
+        }
       </div>
     </div>
     <button

@@ -1,0 +1,58 @@
+@if (loading()) {
+  <div class="flex min-h-[40vh] items-center justify-center" role="status" aria-live="polite">
+    <div class="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-indigo-600" aria-hidden="true"></div>
+    <span class="sr-only">Cargando evento…</span>
+  </div>
+} @else if (!event() || !formValue()) {
+  <div class="rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-12 text-center">
+    <h1 class="text-lg font-semibold text-slate-900">Evento no encontrado</h1>
+    <p class="mt-1 text-sm text-slate-500">No pudimos cargar la información para editar.</p>
+    <a
+      routerLink="/events"
+      class="mt-4 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-500"
+    >
+      Ir a Mis eventos
+    </a>
+  </div>
+} @else {
+  @let item = event()!;
+
+  <div class="mx-auto max-w-4xl">
+    <div class="mb-8">
+      <nav class="flex flex-wrap items-center gap-1.5 text-sm text-slate-500" aria-label="Breadcrumb">
+        <a routerLink="/events" class="font-medium transition-colors hover:text-slate-800">Mis eventos</a>
+        <span aria-hidden="true">/</span>
+        <a
+          [routerLink]="['/events', item.id]"
+          class="font-medium transition-colors hover:text-slate-800"
+        >
+          {{ item.name }}
+        </a>
+        <span aria-hidden="true">/</span>
+        <span class="font-medium text-slate-700">Editar</span>
+      </nav>
+
+      <h1 class="mt-3 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Editar evento</h1>
+      <p class="mt-2 text-sm text-slate-600 sm:text-base">
+        Actualiza la información de tu evento.
+      </p>
+    </div>
+
+    @if (saveSuccess()) {
+      <div
+        class="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800"
+        role="status"
+        aria-live="polite"
+      >
+        Cambios guardados correctamente
+      </div>
+    }
+
+    <app-event-form
+      mode="edit"
+      [initialValue]="formValue()"
+      (formSubmit)="onSubmit($event)"
+      (cancelled)="onCancel()"
+    />
+  </div>
+}

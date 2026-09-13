@@ -1,7 +1,7 @@
 import { Component, input } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 
-import { EVENT_TYPE_OPTIONS, EventType } from '../../../../../../core/models/event-type';
+import { EVENT_TYPE_OPTIONS, EventType } from '../../../../../core/models/event-type';
 
 @Component({
   selector: 'app-event-type-step',

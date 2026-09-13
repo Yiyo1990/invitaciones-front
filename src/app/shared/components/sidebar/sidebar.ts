@@ -16,6 +16,7 @@ export interface NavItem {
 export class Sidebar {
   isOpen = input(false);
   userName = input('Usuario');
+  userEmail = input('');
 
   closeSidebar = output<void>();
   logout = output<void>();

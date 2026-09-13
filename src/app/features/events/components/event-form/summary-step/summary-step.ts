@@ -2,8 +2,8 @@ import { DatePipe } from '@angular/common';
 import { Component, input } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 
-import { EVENT_TYPE_LABELS, EventType } from '../../../../../../core/models/event-type';
-import { InvitationTemplate } from '../../../../../../core/models/invitation-template';
+import { EVENT_TYPE_LABELS, EventType } from '../../../../../core/models/event-type';
+import { InvitationTemplate } from '../../../../../core/models/invitation-template';
 
 @Component({
   selector: 'app-summary-step',
@@ -14,6 +14,7 @@ import { InvitationTemplate } from '../../../../../../core/models/invitation-tem
 export class SummaryStep {
   form = input.required<FormGroup>();
   templates = input.required<InvitationTemplate[]>();
+  reviewHint = input('Revisa la información antes de crear tu invitación.');
 
   protected readonly eventTypeLabels = EVENT_TYPE_LABELS;
 

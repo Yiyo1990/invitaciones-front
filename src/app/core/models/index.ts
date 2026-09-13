@@ -1,4 +1,6 @@
+export * from './auth';
 export * from './create-event-form';
+export * from './event-detail';
 export * from './event-status';
 export * from './event-summary';
 export * from './event-type';
@@ -7,3 +9,4 @@ export * from './guest-status';
 export * from './invitation-public-data';
 export * from './invitation-template';
 export * from './rsvp-form';
+export * from './user';

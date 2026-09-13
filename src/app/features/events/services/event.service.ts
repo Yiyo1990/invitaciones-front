@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Observable, delay, of } from 'rxjs';
 
+import { EventDetail } from '../../../core/models/event-detail';
 import { EventStatus } from '../../../core/models/event-status';
 import { EventSummary } from '../../../core/models/event-summary';
+import { MOCK_EVENT_DETAILS, MOCK_FALLBACK_EVENT_DETAIL } from '../data/mock-event-details';
 import { MOCK_EVENTS } from '../data/mock-events';
 
 export interface DashboardMetrics {
@@ -22,6 +24,20 @@ export class EventService {
   getById(id: string): Observable<EventSummary | null> {
     const event = MOCK_EVENTS.find((item) => item.id === id) ?? null;
     return of(event).pipe(delay(0));
+  }
+
+  getDetail(id: string): Observable<EventDetail | null> {
+    if (!id) {
+      return of(null);
+    }
+
+    const found = MOCK_EVENT_DETAILS.find((item) => item.id === id);
+    if (found) {
+      return of(found).pipe(delay(150));
+    }
+
+    // Demo fallback so routes like /events/123 remain usable with mock data.
+    return of({ ...MOCK_FALLBACK_EVENT_DETAIL, id }).pipe(delay(150));
   }
 
   computeDashboardMetrics(events: EventSummary[]): DashboardMetrics {

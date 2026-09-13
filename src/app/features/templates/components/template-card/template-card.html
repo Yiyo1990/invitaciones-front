@@ -1,0 +1,60 @@
+@let item = template();
+
+<article class="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+  <div class="relative aspect-[4/3] overflow-hidden bg-slate-100">
+    <img
+      [src]="item.previewImage"
+      [alt]="'Vista previa de ' + item.name"
+      class="h-full w-full object-cover"
+    />
+    <span
+      class="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset"
+      [class.bg-white/95]="!item.isPremium"
+      [class.text-slate-700]="!item.isPremium"
+      [class.ring-slate-200]="!item.isPremium"
+      [class.bg-amber-50]="item.isPremium"
+      [class.text-amber-800]="item.isPremium"
+      [class.ring-amber-200]="item.isPremium"
+    >
+      @if (item.isPremium) {
+        <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+          <path
+            fill-rule="evenodd"
+            d="M10 2a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L10 14.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L2.82 8.124a.75.75 0 0 1 .416-1.28l4.21-.611L9.327 2.42A.75.75 0 0 1 10 2Z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        <span>Premium</span>
+      } @else {
+        <span>Gratis</span>
+      }
+    </span>
+  </div>
+
+  <div class="flex flex-1 flex-col p-5">
+    <div class="min-w-0 flex-1">
+      <h3 class="truncate text-base font-semibold text-slate-900">{{ item.name }}</h3>
+      <p class="mt-1 text-sm font-medium text-slate-500">{{ typeLabels[item.category] }}</p>
+      @if (item.description) {
+        <p class="mt-2 line-clamp-2 text-sm text-slate-600">{{ item.description }}</p>
+      }
+    </div>
+
+    <div class="mt-5 flex flex-col gap-2 sm:flex-row">
+      <button
+        type="button"
+        (click)="onPreview()"
+        class="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 sm:flex-1"
+      >
+        Vista previa
+      </button>
+      <button
+        type="button"
+        (click)="onUse()"
+        class="inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-500 sm:flex-1"
+      >
+        Usar plantilla
+      </button>
+    </div>
+  </div>
+</article>

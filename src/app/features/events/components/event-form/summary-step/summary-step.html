@@ -3,7 +3,7 @@
 <div>
   <div class="mb-6">
     <h2 class="text-lg font-semibold text-slate-900">Resumen</h2>
-    <p class="mt-1 text-sm text-slate-600">Revisa la información antes de crear tu invitación.</p>
+    <p class="mt-1 text-sm text-slate-600">{{ reviewHint() }}</p>
   </div>
 
   <div class="space-y-4">
@@ -47,6 +47,14 @@
             <dd class="mt-0.5 text-sm text-slate-600">{{ form().get('venueAddress')?.value }}</dd>
           }
         </div>
+        @if (form().get('dressCode')?.value) {
+          <div>
+            <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Código de vestimenta</dt>
+            <dd class="mt-1 text-sm font-semibold text-slate-900">
+              {{ form().get('dressCode')?.value }}
+            </dd>
+          </div>
+        }
       </dl>
     </div>
 
@@ -65,7 +73,7 @@
           </div>
           <div>
             <p class="font-semibold text-slate-900">{{ template.name }}</p>
-            <p class="mt-0.5 text-sm text-slate-500">{{ template.category }}</p>
+            <p class="mt-0.5 text-sm text-slate-500">{{ eventTypeLabels[template.category] }}</p>
           </div>
         </div>
       </div>

@@ -1,7 +1,8 @@
 import { Component, input } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 
-import { InvitationTemplate } from '../../../../../../core/models/invitation-template';
+import { EVENT_TYPE_LABELS } from '../../../../../core/models/event-type';
+import { InvitationTemplate } from '../../../../../core/models/invitation-template';
 
 @Component({
   selector: 'app-template-step',
@@ -12,6 +13,8 @@ import { InvitationTemplate } from '../../../../../../core/models/invitation-tem
 export class TemplateStep {
   form = input.required<FormGroup>();
   templates = input.required<InvitationTemplate[]>();
+
+  protected readonly typeLabels = EVENT_TYPE_LABELS;
 
   selectTemplate(templateId: string): void {
     this.form().get('templateId')?.setValue(templateId);
