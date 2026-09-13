@@ -1,0 +1,33 @@
+<div [formGroup]="form()">
+  <div class="mb-6">
+    <h2 class="text-lg font-semibold text-slate-900">Tipo de evento</h2>
+    <p class="mt-1 text-sm text-slate-600">Selecciona el tipo de celebración que deseas crear.</p>
+  </div>
+
+  <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    @for (option of eventTypes; track option.value) {
+      <button
+        type="button"
+        (click)="selectType(option.value)"
+        [attr.aria-pressed]="isSelected(option.value)"
+        class="flex items-start gap-4 rounded-2xl border-2 p-4 text-left transition-all hover:shadow-sm"
+        [class.border-indigo-600]="isSelected(option.value)"
+        [class.bg-indigo-50]="isSelected(option.value)"
+        [class.border-slate-200]="!isSelected(option.value)"
+        [class.bg-white]="!isSelected(option.value)"
+      >
+        <span class="text-2xl" aria-hidden="true">{{ option.icon }}</span>
+        <div>
+          <p class="font-semibold text-slate-900">{{ option.label }}</p>
+          <p class="mt-0.5 text-sm text-slate-500">{{ option.description }}</p>
+        </div>
+      </button>
+    }
+  </div>
+
+  <input type="hidden" formControlName="eventType" />
+
+  @if (hasError()) {
+    <p class="mt-3 text-sm text-red-600">Selecciona un tipo de evento para continuar.</p>
+  }
+</div>

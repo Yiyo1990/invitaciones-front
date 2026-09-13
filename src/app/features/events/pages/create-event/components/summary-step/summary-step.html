@@ -1,0 +1,74 @@
+@let template = selectedTemplate();
+
+<div>
+  <div class="mb-6">
+    <h2 class="text-lg font-semibold text-slate-900">Resumen</h2>
+    <p class="mt-1 text-sm text-slate-600">Revisa la información antes de crear tu invitación.</p>
+  </div>
+
+  <div class="space-y-4">
+    <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Tipo de evento</dt>
+          <dd class="mt-1 text-sm font-semibold text-slate-900">{{ eventTypeLabel() }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Nombre del evento</dt>
+          <dd class="mt-1 text-sm font-semibold text-slate-900">
+            {{ form().get('eventName')?.value || '—' }}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Festejado / Pareja</dt>
+          <dd class="mt-1 text-sm font-semibold text-slate-900">
+            {{ form().get('honoreeName')?.value || '—' }}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Fecha y hora</dt>
+          <dd class="mt-1 text-sm font-semibold text-slate-900">
+            @if (form().get('eventDate')?.value) {
+              {{ form().get('eventDate')?.value | date: 'd MMM y' : undefined : 'es' }}
+              @if (form().get('eventTime')?.value) {
+                · {{ form().get('eventTime')?.value }}
+              }
+            } @else {
+              —
+            }
+          </dd>
+        </div>
+        <div class="sm:col-span-2">
+          <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Lugar</dt>
+          <dd class="mt-1 text-sm font-semibold text-slate-900">
+            {{ form().get('venueName')?.value || '—' }}
+          </dd>
+          @if (form().get('venueAddress')?.value) {
+            <dd class="mt-0.5 text-sm text-slate-600">{{ form().get('venueAddress')?.value }}</dd>
+          }
+        </div>
+      </dl>
+    </div>
+
+    @if (template) {
+      <div class="overflow-hidden rounded-xl border border-slate-200">
+        <div class="border-b border-slate-100 bg-slate-50 px-4 py-3">
+          <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Plantilla seleccionada</p>
+        </div>
+        <div class="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
+          <div class="h-24 w-full shrink-0 overflow-hidden rounded-lg bg-slate-100 sm:h-20 sm:w-32">
+            <img
+              [src]="template.previewImage"
+              [alt]="template.name"
+              class="h-full w-full object-cover"
+            />
+          </div>
+          <div>
+            <p class="font-semibold text-slate-900">{{ template.name }}</p>
+            <p class="mt-0.5 text-sm text-slate-500">{{ template.category }}</p>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

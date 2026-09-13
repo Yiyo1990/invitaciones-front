@@ -1,4 +1,143 @@
-<section class="mx-auto min-h-screen max-w-3xl px-4 py-10">
-  <h1 class="text-2xl font-semibold text-slate-900">Invitación pública</h1>
-  <p class="mt-2 text-sm text-slate-600">Micrositio de invitación digital para invitados.</p>
-</section>
+@if (invitation() === undefined) {
+  <div class="flex min-h-screen items-center justify-center bg-stone-100" role="status" aria-live="polite">
+    <div class="h-8 w-8 animate-spin rounded-full border-2 border-stone-300 border-t-amber-700" aria-hidden="true"></div>
+    <span class="sr-only">Cargando invitación…</span>
+  </div>
+} @else if (invitation() === null) {
+  <div class="flex min-h-screen flex-col items-center justify-center bg-stone-100 px-6 text-center">
+    <p class="font-serif text-2xl text-stone-800">Invitación no encontrada</p>
+    <p class="mt-2 text-sm text-stone-500">Verifica que el enlace sea correcto.</p>
+  </div>
+} @else {
+  @let data = invitation()!;
+
+  <div class="invitation-page min-h-screen">
+    <!-- Hero -->
+    <header class="relative flex min-h-[85vh] items-end justify-center overflow-hidden sm:min-h-screen">
+      <img
+        [src]="data.heroImage"
+        [alt]="data.names"
+        class="absolute inset-0 h-full w-full object-cover"
+      />
+      <div class="hero-overlay absolute inset-0"></div>
+
+      <div class="hero-content relative z-10 px-6 pb-16 pt-32 text-center text-white sm:pb-24">
+        <p class="hero-animate text-xs uppercase tracking-[0.35em] text-white/80 sm:text-sm">
+          {{ data.headline }}
+        </p>
+        <h1 class="hero-animate hero-animate-delay-1 mt-4 font-serif text-4xl font-light tracking-wide sm:text-6xl md:text-7xl">
+          {{ data.names }}
+        </h1>
+        <div class="hero-animate hero-animate-delay-2 mx-auto mt-6 h-px w-16 bg-white/50"></div>
+        <p class="hero-animate hero-animate-delay-3 mt-6 font-serif text-lg text-white/90 sm:text-xl">
+          {{ data.eventDate | date: "d 'de' MMMM, y" : undefined : 'es' }}
+        </p>
+      </div>
+    </header>
+
+    <!-- Countdown -->
+    <section class="section-animate -mt-10 relative z-20 mx-auto max-w-lg px-6">
+      <app-invitation-countdown [targetDate]="data.eventDate" />
+    </section>
+
+    <!-- Welcome message -->
+    <section class="section-animate mx-auto max-w-2xl px-6 py-16 text-center sm:py-20">
+      <div class="mx-auto mb-6 h-px w-12 bg-amber-700/40"></div>
+      <p class="font-serif text-lg leading-relaxed text-stone-600 sm:text-xl">
+        {{ data.welcomeMessage }}
+      </p>
+    </section>
+
+    <!-- Ceremony & Reception -->
+    <section class="mx-auto max-w-3xl space-y-6 px-6 pb-16">
+      <app-invitation-venue title="Ceremonia" [venue]="data.ceremony" />
+      <app-invitation-venue title="Recepción" [venue]="data.reception" />
+    </section>
+
+    <!-- Dress code -->
+    <section class="section-animate bg-white/50 py-14 text-center">
+      <div class="mx-auto max-w-md px-6">
+        <p class="text-xs uppercase tracking-[0.3em] text-stone-500">Código de vestimenta</p>
+        <p class="mt-3 font-serif text-3xl text-stone-800">{{ data.dressCode }}</p>
+      </div>
+    </section>
+
+    <!-- Gallery -->
+    <section class="section-animate py-16 sm:py-20">
+      <div class="mx-auto max-w-4xl px-6">
+        <h2 class="mb-8 text-center font-serif text-2xl text-stone-800 sm:text-3xl">Galería</h2>
+        <div class="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3">
+          @for (image of data.galleryImages; track image; let i = $index) {
+            <div
+              class="gallery-item aspect-square overflow-hidden rounded-lg"
+              [style.animation-delay.ms]="i * 80"
+            >
+              <img
+                [src]="image"
+                alt="Foto de la pareja"
+                class="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                loading="lazy"
+              />
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Gift registry -->
+    <section class="section-animate bg-stone-100/80 py-14">
+      <div class="mx-auto max-w-md px-6 text-center">
+        <h2 class="font-serif text-2xl text-stone-800">Mesa de regalos</h2>
+        <p class="mt-2 text-sm text-stone-500">Tu presencia es nuestro mejor regalo, pero si deseas obsequiarnos algo:</p>
+        <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+          @for (store of data.giftRegistry; track store.name) {
+            <a
+              [href]="store.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center justify-center rounded-full border border-stone-300 bg-white px-8 py-3 text-sm font-medium text-stone-700 transition-all hover:border-amber-700/40 hover:shadow-md"
+            >
+              {{ store.name }}
+            </a>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- RSVP -->
+    <section id="rsvp" class="section-animate py-16 sm:py-20">
+      <div class="mx-auto max-w-md px-6 text-center">
+        <h2 class="font-serif text-2xl text-stone-800 sm:text-3xl">Confirma tu asistencia</h2>
+        <p class="mt-3 text-sm text-stone-500">Por favor confirma antes del evento para agilizar la organización.</p>
+        <button
+          type="button"
+          (click)="openRsvpModal()"
+          class="rsvp-button mt-8 inline-flex w-full items-center justify-center rounded-full bg-stone-800 px-8 py-4 text-sm font-medium uppercase tracking-widest text-white transition-all hover:bg-stone-700 hover:shadow-lg sm:w-auto"
+        >
+          Confirmar asistencia
+        </button>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-stone-200/60 bg-white/40 py-10 text-center">
+      <p class="mx-auto max-w-sm px-6 font-serif text-base italic text-stone-600">
+        {{ data.footerMessage }}
+      </p>
+      <p class="mt-4 text-xs text-stone-400">{{ data.names }}</p>
+    </footer>
+
+    <app-modal
+      [open]="rsvpModalOpen()"
+      title="Confirmar asistencia"
+      (closed)="closeRsvpModal()"
+    >
+      @if (rsvpModalOpen()) {
+        <app-rsvp-form
+          [invitationSlug]="data.slug"
+          (cancelled)="closeRsvpModal()"
+        />
+      }
+    </app-modal>
+  </div>
+}
