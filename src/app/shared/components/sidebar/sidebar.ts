@@ -21,10 +21,10 @@ export class Sidebar {
   logout = output<void>();
 
   readonly navItems: NavItem[] = [
-    { label: 'Inicio', route: '/dashboard', icon: 'home' },
+    { label: 'Dashboard', route: '/dashboard', icon: 'home' },
     { label: 'Mis eventos', route: '/events', icon: 'events' },
-    { label: 'Invitados', route: '/guests', icon: 'guests' },
     { label: 'Plantillas', route: '/templates', icon: 'templates' },
+    { label: 'Invitados', route: '/guests', icon: 'guests' },
   ];
 
   onNavClick(): void {

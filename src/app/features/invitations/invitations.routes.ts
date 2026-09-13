@@ -4,6 +4,6 @@ export const INVITATIONS_ROUTES: Routes = [
   {
     path: ':slug',
     loadComponent: () =>
-      import('./invitation-public/invitation-public').then((m) => m.InvitationPublic),
+      import('./pages/public-invitation/public-invitation').then((m) => m.PublicInvitationPage),
   },
 ];
