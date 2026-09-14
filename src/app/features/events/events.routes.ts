@@ -11,6 +11,13 @@ export const EVENTS_ROUTES: Routes = [
     loadComponent: () => import('./pages/edit-event/edit-event').then((m) => m.EditEventPage),
   },
   {
+    path: ':id/invitation/edit',
+    loadComponent: () =>
+      import('../invitations/pages/edit-invitation/edit-invitation').then(
+        (m) => m.EditInvitationPage,
+      ),
+  },
+  {
     path: ':id/guests',
     loadComponent: () =>
       import('../guests/pages/guest-list/guest-list').then((m) => m.GuestListPage),

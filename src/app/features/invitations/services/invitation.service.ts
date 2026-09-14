@@ -3,10 +3,20 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, map, of } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
+import {
+  CreateInvitationRequest,
+  InvitationApiResponse,
+  PublicInvitationApiResponse,
+  UpdateInvitationRequest,
+} from '../../../core/models/event-api';
 import { EVENT_TYPE_LABELS } from '../../../core/models/event-type';
-import { PublicInvitationApiResponse } from '../../../core/models/event-api';
 import { InvitationPublicData } from '../../../core/models/invitation-public-data';
 import { GuestStatus } from '../../../core/models/guest-status';
+import {
+  DEFAULT_INVITATION_PRIMARY_COLOR,
+  DEFAULT_INVITATION_SECONDARY_COLOR,
+  resolveInvitationColor,
+} from '../../../core/utils/invitation-style.util';
 
 export interface PublicGuestApiResponse {
   guestCode: string;
@@ -25,9 +35,83 @@ export interface RespondRsvpRequest {
   message?: string | null;
 }
 
+/** Subset of UpdateInvitationRequest used by the customization editor. */
+export type InvitationCustomizationRequest = Pick<
+  UpdateInvitationRequest,
+  | 'welcomeMessage'
+  | 'primaryColor'
+  | 'secondaryColor'
+  | 'backgroundImageUrl'
+  | 'coverImageUrl'
+  | 'musicUrl'
+>;
+
 @Injectable({ providedIn: 'root' })
 export class InvitationService {
   private readonly http = inject(HttpClient);
+
+  private eventsInvitationUrl(eventId: string): string {
+    return `${environment.apiUrl}/events/${eventId}/invitation`;
+  }
+
+  /** Authenticated: `GET /api/events/:eventId/invitation`. Returns null on 404. */
+  getByEventId(eventId: string): Observable<InvitationApiResponse | null> {
+    return this.http.get<InvitationApiResponse>(this.eventsInvitationUrl(eventId)).pipe(
+      catchError((error: unknown) => {
+        if (error instanceof HttpErrorResponse && error.status === 404) {
+          return of(null);
+        }
+        throw error;
+      }),
+    );
+  }
+
+  /** Authenticated: `POST /api/events/:eventId/invitation`. */
+  create(eventId: string, body: CreateInvitationRequest = {}): Observable<InvitationApiResponse> {
+    return this.http.post<InvitationApiResponse>(this.eventsInvitationUrl(eventId), body);
+  }
+
+  /** Authenticated: `PATCH /api/events/:eventId/invitation`. */
+  update(
+    eventId: string,
+    body: UpdateInvitationRequest,
+  ): Observable<InvitationApiResponse> {
+    return this.http.patch<InvitationApiResponse>(this.eventsInvitationUrl(eventId), body);
+  }
+
+  /**
+   * Saves customization fields. Creates the invitation when none exists yet
+   * (explicit create via backend POST — never invents local data).
+   */
+  saveCustomization(
+    eventId: string,
+    body: InvitationCustomizationRequest,
+    options: { createIfMissing: boolean },
+  ): Observable<InvitationApiResponse> {
+    if (options.createIfMissing) {
+      const createBody: CreateInvitationRequest = {};
+      if (body.welcomeMessage) {
+        createBody.welcomeMessage = body.welcomeMessage;
+      }
+      if (body.primaryColor) {
+        createBody.primaryColor = body.primaryColor;
+      }
+      if (body.secondaryColor) {
+        createBody.secondaryColor = body.secondaryColor;
+      }
+      if (body.backgroundImageUrl) {
+        createBody.backgroundImageUrl = body.backgroundImageUrl;
+      }
+      if (body.coverImageUrl) {
+        createBody.coverImageUrl = body.coverImageUrl;
+      }
+      if (body.musicUrl) {
+        createBody.musicUrl = body.musicUrl;
+      }
+      return this.create(eventId, createBody);
+    }
+    return this.update(eventId, body);
+  }
 
   getBySlug(slug: string): Observable<InvitationPublicData | null> {
     return this.http
@@ -80,19 +164,23 @@ export class InvitationService {
       EVENT_TYPE_LABELS[api.event.eventType] ||
       'Invitación';
 
+    const welcomeFromInvitation = api.invitation.welcomeMessage?.trim() || '';
+    const welcomeFallback = api.event.description?.trim() || '';
+
+    const coverImageUrl = api.invitation.coverImageUrl?.trim() || '';
+    const backgroundImageUrl = api.invitation.backgroundImageUrl?.trim() || '';
+
     return {
       slug: api.slug,
       heroImage:
-        api.invitation.coverImageUrl ||
-        api.invitation.backgroundImageUrl ||
+        coverImageUrl ||
+        backgroundImageUrl ||
         'https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&q=80',
       names,
       headline: api.invitation.subtitle?.trim() || EVENT_TYPE_LABELS[api.event.eventType] || 'Te invitamos',
       eventDate: new Date(api.event.eventDate),
-      welcomeMessage:
-        api.invitation.welcomeMessage?.trim() ||
-        api.event.description?.trim() ||
-        'Nos encantaría contar con tu presencia.',
+      welcomeMessage: welcomeFromInvitation || welcomeFallback,
+      hasWelcomeMessage: welcomeFromInvitation.length > 0 || welcomeFallback.length > 0,
       ceremony: {
         name: api.event.venueName || 'Ceremonia',
         time: timeLabel || 'Por confirmar',
@@ -106,9 +194,20 @@ export class InvitationService {
         mapsUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`,
       },
       dressCode: api.event.dressCode?.trim() || 'Por confirmar',
-      galleryImages: api.invitation.coverImageUrl ? [api.invitation.coverImageUrl] : [],
+      galleryImages: coverImageUrl ? [coverImageUrl] : [],
       giftRegistry: [],
       footerMessage: 'Gracias por acompañarnos en este momento especial.',
+      primaryColor: resolveInvitationColor(
+        api.invitation.primaryColor,
+        DEFAULT_INVITATION_PRIMARY_COLOR,
+      ),
+      secondaryColor: resolveInvitationColor(
+        api.invitation.secondaryColor,
+        DEFAULT_INVITATION_SECONDARY_COLOR,
+      ),
+      backgroundImageUrl: backgroundImageUrl || undefined,
+      coverImageUrl: coverImageUrl || undefined,
+      musicUrl: api.invitation.musicUrl?.trim() || undefined,
     };
   }
 }

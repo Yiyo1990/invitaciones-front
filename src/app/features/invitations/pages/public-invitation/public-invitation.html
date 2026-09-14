@@ -13,7 +13,23 @@
 } @else {
   @let data = invitation()!;
 
-  <div class="invitation-page min-h-screen">
+  <div class="invitation-page min-h-screen" [style]="themeStyles()">
+    @if (data.musicUrl) {
+      <audio
+        #musicAudio
+        [src]="data.musicUrl"
+        preload="none"
+        (ended)="onMusicEnded()"
+      ></audio>
+      <button
+        type="button"
+        (click)="toggleMusic()"
+        class="music-toggle fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white/95 px-4 py-2.5 text-sm font-medium text-stone-700 shadow-lg backdrop-blur transition-colors hover:bg-white"
+      >
+        {{ musicPlaying() ? '❚❚ Pausar música' : '♫ Reproducir música' }}
+      </button>
+    }
+
     <header class="relative flex min-h-[85vh] items-end justify-center overflow-hidden sm:min-h-screen">
       <img
         [src]="data.heroImage"
@@ -29,7 +45,10 @@
         <h1 class="hero-animate hero-animate-delay-1 mt-4 font-serif text-4xl font-light tracking-wide sm:text-6xl md:text-7xl">
           {{ data.names }}
         </h1>
-        <div class="hero-animate hero-animate-delay-2 mx-auto mt-6 h-px w-16 bg-white/50"></div>
+        <div
+          class="hero-animate hero-animate-delay-2 mx-auto mt-6 h-px w-16"
+          [style.background-color]="'color-mix(in srgb, var(--invitation-primary) 70%, white)'"
+        ></div>
         <p class="hero-animate hero-animate-delay-3 mt-6 font-serif text-lg text-white/90 sm:text-xl">
           {{ data.eventDate | date: "d 'de' MMMM, y" : undefined : 'es' }}
         </p>
@@ -40,20 +59,29 @@
       <app-invitation-countdown [targetDate]="data.eventDate" />
     </section>
 
-    <section class="section-animate mx-auto max-w-2xl px-6 py-16 text-center sm:py-20">
-      <div class="mx-auto mb-6 h-px w-12 bg-amber-700/40"></div>
-      <p class="font-serif text-lg leading-relaxed text-stone-600 sm:text-xl">
-        {{ data.welcomeMessage }}
-      </p>
-    </section>
+    @if (data.hasWelcomeMessage) {
+      <section class="section-animate mx-auto max-w-2xl px-6 py-16 text-center sm:py-20">
+        <div
+          class="mx-auto mb-6 h-px w-12"
+          [style.background-color]="'color-mix(in srgb, var(--invitation-primary) 45%, transparent)'"
+        ></div>
+        <p class="font-serif text-lg leading-relaxed text-stone-600 sm:text-xl">
+          {{ data.welcomeMessage }}
+        </p>
+      </section>
+    }
 
     <section class="mx-auto max-w-3xl space-y-6 px-6 pb-16">
       <app-invitation-venue title="Ceremonia" [venue]="data.ceremony" />
       <app-invitation-venue title="Recepción" [venue]="data.reception" />
     </section>
 
-    <section class="section-animate bg-white/50 py-14 text-center">
-      <div class="mx-auto max-w-md px-6">
+    <section
+      class="section-animate themed-band py-14 text-center"
+      [class.has-bg-image]="!!data.backgroundImageUrl"
+      [style.background-image]="data.backgroundImageUrl ? 'url(' + data.backgroundImageUrl + ')' : null"
+    >
+      <div class="themed-band-inner mx-auto max-w-md px-6">
         <p class="text-xs uppercase tracking-[0.3em] text-stone-500">Código de vestimenta</p>
         <p class="mt-3 font-serif text-3xl text-stone-800">{{ data.dressCode }}</p>
       </div>
@@ -112,7 +140,7 @@
           <button
             type="button"
             (click)="openRsvpModal()"
-            class="rsvp-button mt-8 inline-flex w-full items-center justify-center rounded-full bg-stone-800 px-8 py-4 text-sm font-medium uppercase tracking-widest text-white transition-all hover:bg-stone-700 hover:shadow-lg sm:w-auto"
+            class="rsvp-button mt-8 inline-flex w-full items-center justify-center rounded-full px-8 py-4 text-sm font-medium uppercase tracking-widest text-white transition-all hover:brightness-110 hover:shadow-lg sm:w-auto"
           >
             Confirmar asistencia
           </button>

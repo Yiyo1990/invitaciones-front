@@ -1,0 +1,327 @@
+@if (loading()) {
+  <div class="flex min-h-[40vh] items-center justify-center" role="status" aria-live="polite">
+    <div class="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-indigo-600" aria-hidden="true"></div>
+    <span class="sr-only">Cargando personalización…</span>
+  </div>
+} @else if (loadError() || !event()) {
+  <div class="rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-12 text-center">
+    <h1 class="text-lg font-semibold text-slate-900">No pudimos cargar la configuración de la invitación</h1>
+    <p class="mt-1 text-sm text-slate-500">{{ loadError() || 'Inténtalo de nuevo más tarde.' }}</p>
+    <a
+      routerLink="/events"
+      class="mt-4 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-500"
+    >
+      Ir a Mis eventos
+    </a>
+  </div>
+} @else {
+  @let item = event()!;
+
+  <div class="mx-auto max-w-6xl">
+    <div class="mb-8">
+      <nav class="flex flex-wrap items-center gap-1.5 text-sm text-slate-500" aria-label="Breadcrumb">
+        <a routerLink="/events" class="font-medium transition-colors hover:text-slate-800">Mis eventos</a>
+        <span aria-hidden="true">/</span>
+        <a
+          [routerLink]="['/events', item.id]"
+          class="font-medium transition-colors hover:text-slate-800"
+        >
+          {{ item.name }}
+        </a>
+        <span aria-hidden="true">/</span>
+        <span class="font-medium text-slate-700">Personalizar invitación</span>
+      </nav>
+
+      <h1 class="mt-3 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
+        Personalizar invitación
+      </h1>
+      <p class="mt-2 text-sm text-slate-600 sm:text-base">
+        Haz que tu invitación refleje el estilo de tu evento.
+      </p>
+    </div>
+
+    @if (missingInvitation()) {
+      <div
+        class="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+        role="status"
+      >
+        Este evento aún no tiene una invitación. Al guardar se creará automáticamente con estos valores.
+      </div>
+    }
+
+    @if (saveSuccess()) {
+      <div
+        class="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800"
+        role="status"
+        aria-live="polite"
+      >
+        Invitación actualizada correctamente
+      </div>
+    }
+
+    @if (saveError()) {
+      <div
+        class="mb-6 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700"
+        role="alert"
+      >
+        {{ saveError() }}
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="grid grid-cols-1 gap-8 lg:grid-cols-5" novalidate>
+      <div class="space-y-6 lg:col-span-3">
+        <!-- Content -->
+        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <h2 class="text-base font-semibold text-slate-900">Contenido</h2>
+          <div class="mt-4">
+            <div class="flex items-end justify-between gap-3">
+              <label for="welcomeMessage" class="block text-sm font-medium text-slate-700">
+                Mensaje de bienvenida
+              </label>
+              <span class="text-xs text-slate-400">{{ welcomeLength() }}/{{ welcomeMaxLength }}</span>
+            </div>
+            <p class="mt-1 text-xs text-slate-500">Este mensaje aparecerá al inicio de tu invitación.</p>
+            <textarea
+              id="welcomeMessage"
+              formControlName="welcomeMessage"
+              rows="4"
+              [attr.maxlength]="welcomeMaxLength"
+              placeholder="Nos llena de alegría compartir contigo este momento tan especial..."
+              class="mt-2 block w-full resize-y rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+            ></textarea>
+            @if (isInvalid('welcomeMessage')) {
+              <p class="mt-1.5 text-sm text-rose-600" role="alert">
+                El mensaje no puede superar {{ welcomeMaxLength }} caracteres.
+              </p>
+            }
+          </div>
+        </section>
+
+        <!-- Colors -->
+        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <h2 class="text-base font-semibold text-slate-900">Colores</h2>
+          <p class="mt-1 text-xs text-slate-500">
+            Si dejas un color vacío se usará un valor visual por defecto solo en la vista previa.
+          </p>
+
+          <div class="mt-5 grid gap-5 sm:grid-cols-2">
+            <div>
+              <label for="primaryColor" class="block text-sm font-medium text-slate-700">Color principal</label>
+              <div class="mt-2 flex items-center gap-2">
+                <input
+                  id="primaryColor"
+                  type="text"
+                  formControlName="primaryColor"
+                  placeholder="#B88A44"
+                  maxlength="7"
+                  class="block w-full rounded-xl border border-slate-300 px-3 py-2 font-mono text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                />
+                <input
+                  type="color"
+                  [value]="previewPrimary()"
+                  (input)="onPrimaryColorPick($event)"
+                  class="h-10 w-12 cursor-pointer rounded-lg border border-slate-200 bg-white p-1"
+                  aria-label="Selector de color principal"
+                />
+              </div>
+              @if (isInvalid('primaryColor')) {
+                <p class="mt-1.5 text-sm text-rose-600" role="alert">Usa un color hexadecimal válido, por ejemplo #B88A44.</p>
+              }
+            </div>
+
+            <div>
+              <label for="secondaryColor" class="block text-sm font-medium text-slate-700">Color secundario</label>
+              <div class="mt-2 flex items-center gap-2">
+                <input
+                  id="secondaryColor"
+                  type="text"
+                  formControlName="secondaryColor"
+                  placeholder="#F3E8FF"
+                  maxlength="7"
+                  class="block w-full rounded-xl border border-slate-300 px-3 py-2 font-mono text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                />
+                <input
+                  type="color"
+                  [value]="previewSecondary()"
+                  (input)="onSecondaryColorPick($event)"
+                  class="h-10 w-12 cursor-pointer rounded-lg border border-slate-200 bg-white p-1"
+                  aria-label="Selector de color secundario"
+                />
+              </div>
+              @if (isInvalid('secondaryColor')) {
+                <p class="mt-1.5 text-sm text-rose-600" role="alert">Usa un color hexadecimal válido, por ejemplo #F3E8FF.</p>
+              }
+            </div>
+          </div>
+        </section>
+
+        <!-- Images -->
+        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <h2 class="text-base font-semibold text-slate-900">Imágenes</h2>
+          <p class="mt-1 text-xs text-slate-500">
+            Por ahora puedes pegar una URL. Más adelante se podrá sustituir por carga de archivos.
+          </p>
+
+          <div class="mt-5 space-y-6">
+            <div>
+              <label for="coverImageUrl" class="block text-sm font-medium text-slate-700">Imagen de portada</label>
+              <input
+                id="coverImageUrl"
+                type="url"
+                formControlName="coverImageUrl"
+                placeholder="https://..."
+                class="mt-2 block w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+              />
+              @if (isInvalid('coverImageUrl')) {
+                <p class="mt-1.5 text-sm text-rose-600" role="alert">Ingresa una URL válida.</p>
+              }
+              @if (hasCoverUrl()) {
+                <div class="mt-3 overflow-hidden rounded-xl border border-slate-200">
+                  <img [src]="coverUrlValue()" alt="Vista previa de portada" class="h-40 w-full object-cover" />
+                </div>
+                <button
+                  type="button"
+                  (click)="clearCoverImage()"
+                  class="mt-2 text-sm font-medium text-slate-600 transition-colors hover:text-rose-600"
+                >
+                  Quitar imagen
+                </button>
+              }
+            </div>
+
+            <div>
+              <label for="backgroundImageUrl" class="block text-sm font-medium text-slate-700">Imagen de fondo</label>
+              <p class="mt-1 text-xs text-slate-500">
+                Se utilizará como fondo en secciones de la invitación que lo permitan.
+              </p>
+              <input
+                id="backgroundImageUrl"
+                type="url"
+                formControlName="backgroundImageUrl"
+                placeholder="https://..."
+                class="mt-2 block w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+              />
+              @if (isInvalid('backgroundImageUrl')) {
+                <p class="mt-1.5 text-sm text-rose-600" role="alert">Ingresa una URL válida.</p>
+              }
+              @if (hasBackgroundUrl()) {
+                <div class="mt-3 overflow-hidden rounded-xl border border-slate-200">
+                  <img [src]="previewBackground()" alt="Vista previa de fondo" class="h-32 w-full object-cover" />
+                </div>
+                <button
+                  type="button"
+                  (click)="clearBackgroundImage()"
+                  class="mt-2 text-sm font-medium text-slate-600 transition-colors hover:text-rose-600"
+                >
+                  Quitar imagen
+                </button>
+              }
+            </div>
+          </div>
+        </section>
+
+        <!-- Music -->
+        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <h2 class="text-base font-semibold text-slate-900">Música</h2>
+          <p class="mt-1 text-xs text-slate-500">Agrega una canción para ambientar la invitación.</p>
+          <label for="musicUrl" class="mt-4 block text-sm font-medium text-slate-700">Música de la invitación</label>
+          <input
+            id="musicUrl"
+            type="url"
+            formControlName="musicUrl"
+            placeholder="https://..."
+            class="mt-2 block w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+          />
+          @if (isInvalid('musicUrl')) {
+            <p class="mt-1.5 text-sm text-rose-600" role="alert">Ingresa una URL válida.</p>
+          }
+          @if (previewMusic()) {
+            <audio class="mt-3 w-full" controls [src]="previewMusic()" preload="none">
+              Tu navegador no soporta audio.
+            </audio>
+            <button
+              type="button"
+              (click)="clearMusic()"
+              class="mt-2 text-sm font-medium text-slate-600 transition-colors hover:text-rose-600"
+            >
+              Quitar música
+            </button>
+          }
+        </section>
+
+        <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            (click)="onCancel()"
+            [disabled]="saving()"
+            class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-60"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            [disabled]="!canSubmit()"
+            class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {{ saving() ? 'Guardando...' : 'Guardar cambios' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Live preview -->
+      <aside class="lg:col-span-2">
+        <div class="lg:sticky lg:top-6">
+          <h2 class="mb-3 text-base font-semibold text-slate-900">Vista previa</h2>
+          <div
+            class="overflow-hidden rounded-2xl border border-slate-200 shadow-sm"
+            [style.--invitation-primary]="previewPrimary()"
+            [style.--invitation-secondary]="previewSecondary()"
+          >
+            <div
+              class="relative flex min-h-[22rem] flex-col justify-end bg-slate-200 p-5 text-white"
+              [style.background-color]="previewSecondary()"
+            >
+              @if (previewCover()) {
+                <img
+                  [src]="previewCover()"
+                  alt=""
+                  class="absolute inset-0 h-full w-full object-cover"
+                  aria-hidden="true"
+                />
+              }
+              <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/10"></div>
+              <div class="relative z-10 space-y-2 pb-2">
+                <p class="text-xs uppercase tracking-[0.25em] text-white/80">{{ previewSubtitle() }}</p>
+                <p class="font-serif text-2xl font-medium leading-tight sm:text-3xl">{{ previewTitle() }}</p>
+              </div>
+            </div>
+
+            <div
+              class="space-y-4 p-5"
+              [style.background-color]="previewSecondary()"
+              [style.background-image]="previewBackground() ? 'url(' + previewBackground() + ')' : 'none'"
+              [style.background-size]="'cover'"
+              [style.background-position]="'center'"
+            >
+              <div class="rounded-xl bg-white/90 p-4 backdrop-blur-sm">
+                @if (previewWelcome()) {
+                  <p class="text-sm leading-relaxed text-slate-700">{{ previewWelcome() }}</p>
+                } @else {
+                  <p class="text-sm italic text-slate-400">El mensaje de bienvenida aparecerá aquí.</p>
+                }
+                <button
+                  type="button"
+                  class="mt-4 inline-flex w-full items-center justify-center rounded-full px-4 py-2.5 text-sm font-semibold text-white"
+                  [style.background-color]="previewPrimary()"
+                  tabindex="-1"
+                >
+                  Confirmar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </form>
+  </div>
+}

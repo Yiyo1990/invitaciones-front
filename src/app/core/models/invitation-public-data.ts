@@ -17,6 +17,8 @@ export interface InvitationPublicData {
   headline: string;
   eventDate: Date;
   welcomeMessage: string;
+  /** False when neither invitation welcomeMessage nor event description exist. */
+  hasWelcomeMessage: boolean;
   ceremony: VenueInfo;
   reception: VenueInfo;
   dressCode: string;
@@ -24,4 +26,9 @@ export interface InvitationPublicData {
   giftRegistry: GiftRegistryLink[];
   rsvpUrl?: string;
   footerMessage: string;
+  primaryColor: string;
+  secondaryColor: string;
+  backgroundImageUrl?: string;
+  coverImageUrl?: string;
+  musicUrl?: string;
 }
