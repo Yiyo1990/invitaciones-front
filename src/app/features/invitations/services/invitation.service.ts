@@ -7,6 +7,7 @@ import {
   CreateInvitationRequest,
   InvitationApiResponse,
   PublicInvitationApiResponse,
+  UpdateInvitationCustomizationRequest,
   UpdateInvitationRequest,
 } from '../../../core/models/event-api';
 import { EVENT_TYPE_LABELS } from '../../../core/models/event-type';
@@ -35,17 +36,8 @@ export interface RespondRsvpRequest {
   message?: string | null;
 }
 
-/** Subset of UpdateInvitationRequest used by the customization editor. */
-export type InvitationCustomizationRequest = Pick<
-  UpdateInvitationRequest,
-  | 'welcomeMessage'
-  | 'primaryColor'
-  | 'secondaryColor'
-  | 'backgroundImageUrl'
-  | 'coverImageUrl'
-  | 'musicUrl'
->;
-
+/** @deprecated Prefer UpdateInvitationCustomizationRequest from core/models/event-api. */
+export type InvitationCustomizationRequest = UpdateInvitationCustomizationRequest;
 @Injectable({ providedIn: 'root' })
 export class InvitationService {
   private readonly http = inject(HttpClient);
@@ -79,13 +71,22 @@ export class InvitationService {
     return this.http.patch<InvitationApiResponse>(this.eventsInvitationUrl(eventId), body);
   }
 
+  /** Authenticated: `PATCH /api/events/:eventId/invitation` (Nest `UpdateInvitationDto`). */
+  updateCustomization(
+    eventId: string,
+    body: UpdateInvitationCustomizationRequest,
+  ): Observable<InvitationApiResponse> {
+    return this.update(eventId, body);
+  }
+
   /**
-   * Saves customization fields. Creates the invitation when none exists yet
-   * (explicit create via backend POST — never invents local data).
+   * Saves customization fields.
+   * Prefer PATCH when the invitation already exists (normal after event creation).
+   * Falls back to POST only when GET returned 404.
    */
   saveCustomization(
     eventId: string,
-    body: InvitationCustomizationRequest,
+    body: UpdateInvitationCustomizationRequest,
     options: { createIfMissing: boolean },
   ): Observable<InvitationApiResponse> {
     if (options.createIfMissing) {
@@ -110,7 +111,7 @@ export class InvitationService {
       }
       return this.create(eventId, createBody);
     }
-    return this.update(eventId, body);
+    return this.updateCustomization(eventId, body);
   }
 
   getBySlug(slug: string): Observable<InvitationPublicData | null> {

@@ -11,9 +11,12 @@ import {
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { catchError, forkJoin, map, of, switchMap } from 'rxjs';
+import { catchError, forkJoin, map, of } from 'rxjs';
 
-import { InvitationApiResponse } from '../../../../core/models/event-api';
+import {
+  InvitationApiResponse,
+  UpdateInvitationCustomizationRequest,
+} from '../../../../core/models/event-api';
 import { EventSummary } from '../../../../core/models/event-summary';
 import { InvitationTemplate } from '../../../../core/models/invitation-template';
 import { getApiErrorMessage } from '../../../../core/utils/api-error.util';
@@ -30,10 +33,7 @@ import {
 } from '../../../../shared/validators/invitation-style.validators';
 import { EventService } from '../../../events/services/event.service';
 import { TemplateService } from '../../../templates/services/template.service';
-import {
-  InvitationCustomizationRequest,
-  InvitationService,
-} from '../../services/invitation.service';
+import { InvitationService } from '../../services/invitation.service';
 
 @Component({
   selector: 'app-edit-invitation-page',
@@ -52,8 +52,8 @@ export class EditInvitationPage implements OnInit {
   private readonly templateService = inject(TemplateService);
 
   protected readonly welcomeMaxLength = INVITATION_WELCOME_MESSAGE_MAX_LENGTH;
-  protected readonly defaultPrimary = DEFAULT_INVITATION_PRIMARY_COLOR;
-  protected readonly defaultSecondary = DEFAULT_INVITATION_SECONDARY_COLOR;
+  protected readonly defaultPrimaryColor = DEFAULT_INVITATION_PRIMARY_COLOR;
+  protected readonly defaultSecondaryColor = DEFAULT_INVITATION_SECONDARY_COLOR;
 
   protected readonly loading = signal(true);
   protected readonly loadError = signal<string | null>(null);
@@ -65,7 +65,7 @@ export class EditInvitationPage implements OnInit {
   protected readonly invitation = signal<InvitationApiResponse | null>(null);
   protected readonly template = signal<InvitationTemplate | null>(null);
 
-  /** Bumps on every form value change so OnPush preview stays in sync. */
+  /** Bumps on every form value change so OnPush preview/dirty stay in sync. */
   private readonly formTick = signal(0);
 
   protected readonly form = this.fb.nonNullable.group({
@@ -91,12 +91,15 @@ export class EditInvitationPage implements OnInit {
 
   protected readonly previewPrimary = computed(() => {
     this.formTick();
-    return resolveInvitationColor(this.form.controls.primaryColor.value, this.defaultPrimary);
+    return resolveInvitationColor(this.form.controls.primaryColor.value, this.defaultPrimaryColor);
   });
 
   protected readonly previewSecondary = computed(() => {
     this.formTick();
-    return resolveInvitationColor(this.form.controls.secondaryColor.value, this.defaultSecondary);
+    return resolveInvitationColor(
+      this.form.controls.secondaryColor.value,
+      this.defaultSecondaryColor,
+    );
   });
 
   protected readonly previewCover = computed(() => {
@@ -140,7 +143,7 @@ export class EditInvitationPage implements OnInit {
 
   protected readonly canSubmit = computed(() => {
     this.formTick();
-    return this.form.valid && !this.saving();
+    return this.form.valid && this.form.dirty && !this.saving();
   });
 
   protected readonly previewTitle = computed(
@@ -160,75 +163,13 @@ export class EditInvitationPage implements OnInit {
     this.route.paramMap
       .pipe(
         map((params) => params.get('id') ?? ''),
-        switchMap((eventId) => {
-          this.loading.set(true);
-          this.loadError.set(null);
-          this.saveError.set(null);
-          this.saveSuccess.set(false);
-
-          if (!eventId) {
-            return of({
-              eventId: '',
-              event: null as EventSummary | null,
-              invitation: null as InvitationApiResponse | null,
-              template: null as InvitationTemplate | null,
-              loadError: 'Evento no válido.',
-            });
-          }
-
-          return forkJoin({
-            event: this.eventService.getById(eventId),
-            invitation: this.invitationService.getByEventId(eventId),
-            templates: this.templateService.getAll().pipe(catchError(() => of([]))),
-          }).pipe(
-            map(({ event, invitation, templates }) => {
-              const template =
-                templates.find((item) => item.id === invitation?.templateId) ?? null;
-              return {
-                eventId,
-                event,
-                invitation,
-                template,
-                loadError: event ? null : 'No encontramos el evento solicitado.',
-              };
-            }),
-            catchError((error: unknown) =>
-              of({
-                eventId,
-                event: null as EventSummary | null,
-                invitation: null as InvitationApiResponse | null,
-                template: null as InvitationTemplate | null,
-                loadError:
-                  getApiErrorMessage(error) ||
-                  'No pudimos cargar la configuración de la invitación.',
-              }),
-            ),
-          );
-        }),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe((result) => {
-        this.loading.set(false);
-        this.event.set(result.event);
-        this.invitation.set(result.invitation);
-        this.template.set(result.template);
-        this.missingInvitation.set(!!result.event && !result.invitation);
-        this.loadError.set(result.loadError);
+      .subscribe((eventId) => this.loadPage(eventId));
+  }
 
-        if (result.invitation) {
-          this.patchFormFromInvitation(result.invitation);
-        } else {
-          this.form.reset({
-            welcomeMessage: '',
-            primaryColor: '',
-            secondaryColor: '',
-            coverImageUrl: '',
-            backgroundImageUrl: '',
-            musicUrl: '',
-          });
-          this.form.markAsPristine();
-        }
-      });
+  protected retry(): void {
+    this.loadPage(this.eventId());
   }
 
   protected isInvalid(controlName: keyof typeof this.form.controls): boolean {
@@ -269,7 +210,7 @@ export class EditInvitationPage implements OnInit {
   }
 
   protected onSubmit(): void {
-    if (this.form.invalid || this.saving()) {
+    if (this.form.invalid || this.form.pristine || this.saving()) {
       this.form.markAllAsTouched();
       return;
     }
@@ -284,33 +225,104 @@ export class EditInvitationPage implements OnInit {
     this.saveError.set(null);
     this.saveSuccess.set(false);
 
-    this.invitationService
-      .saveCustomization(eventId, body, { createIfMissing: this.missingInvitation() })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (saved) => {
-          this.saving.set(false);
-          this.invitation.set(saved);
-          this.missingInvitation.set(false);
-          this.patchFormFromInvitation(saved);
-          this.saveSuccess.set(true);
-        },
-        error: (error: unknown) => {
-          this.saving.set(false);
-          if (error instanceof HttpErrorResponse && error.status === 409) {
-            this.saveError.set(
-              'Ya existe una invitación para este evento. Recarga la página e inténtalo de nuevo.',
-            );
-            return;
-          }
+    const request$ = this.missingInvitation()
+      ? this.invitationService.saveCustomization(eventId, body, { createIfMissing: true })
+      : this.invitationService.updateCustomization(eventId, body);
+
+    request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (saved) => {
+        this.saving.set(false);
+        this.invitation.set(saved);
+        this.missingInvitation.set(false);
+        this.patchFormFromInvitation(saved);
+        this.saveSuccess.set(true);
+      },
+      error: (error: unknown) => {
+        this.saving.set(false);
+        if (error instanceof HttpErrorResponse && error.status === 409) {
           this.saveError.set(
-            'No pudimos guardar los cambios. Inténtalo nuevamente.',
+            'Ya existe una invitación para este evento. Usa Reintentar e inténtalo de nuevo.',
           );
-        },
+          return;
+        }
+        this.saveError.set('No pudimos guardar los cambios. Inténtalo nuevamente.');
+      },
+    });
+  }
+
+  private loadPage(eventId: string): void {
+    this.loading.set(true);
+    this.loadError.set(null);
+    this.saveError.set(null);
+    this.saveSuccess.set(false);
+
+    if (!eventId) {
+      this.loading.set(false);
+      this.event.set(null);
+      this.invitation.set(null);
+      this.template.set(null);
+      this.loadError.set('Evento no válido.');
+      return;
+    }
+
+    forkJoin({
+      event: this.eventService.getById(eventId),
+      invitation: this.invitationService.getByEventId(eventId),
+      templates: this.templateService.getAll().pipe(catchError(() => of([]))),
+    })
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        map(({ event, invitation, templates }) => {
+          const template =
+            templates.find((item) => item.id === invitation?.templateId) ?? null;
+          return {
+            event,
+            invitation,
+            template,
+            loadError: event
+              ? null
+              : 'No pudimos cargar la personalización de la invitación.',
+          };
+        }),
+        catchError((error: unknown) =>
+          of({
+            event: null as EventSummary | null,
+            invitation: null as InvitationApiResponse | null,
+            template: null as InvitationTemplate | null,
+            loadError:
+              getApiErrorMessage(error) ||
+              'No pudimos cargar la personalización de la invitación.',
+          }),
+        ),
+      )
+      .subscribe((result) => {
+        this.loading.set(false);
+        this.event.set(result.event);
+        this.invitation.set(result.invitation);
+        this.template.set(result.template);
+        this.missingInvitation.set(!!result.event && !result.invitation);
+        this.loadError.set(result.loadError);
+
+        if (result.invitation) {
+          this.patchFormFromInvitation(result.invitation);
+          return;
+        }
+
+        this.form.reset({
+          welcomeMessage: '',
+          primaryColor: '',
+          secondaryColor: '',
+          coverImageUrl: '',
+          backgroundImageUrl: '',
+          musicUrl: '',
+        });
+        this.form.markAsPristine();
+        this.formTick.update((value) => value + 1);
       });
   }
 
   private patchFormFromInvitation(invitation: InvitationApiResponse): void {
+    // Keep empty string in controls; map to JSON null only when building the PATCH body.
     this.form.reset({
       welcomeMessage: invitation.welcomeMessage ?? '',
       primaryColor: invitation.primaryColor ?? '',
@@ -323,7 +335,7 @@ export class EditInvitationPage implements OnInit {
     this.formTick.update((value) => value + 1);
   }
 
-  private buildRequestBody(): InvitationCustomizationRequest {
+  private buildRequestBody(): UpdateInvitationCustomizationRequest {
     const raw = this.form.getRawValue();
     return {
       welcomeMessage: emptyToNull(raw.welcomeMessage),

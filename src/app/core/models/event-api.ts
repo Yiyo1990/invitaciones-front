@@ -97,6 +97,17 @@ export type UpdateInvitationRequest = Partial<{
   musicUrl: string | null;
 }>;
 
+/** Customization subset of NestJS `UpdateInvitationDto` (nullable clears fields). */
+export type UpdateInvitationCustomizationRequest = Pick<
+  UpdateInvitationRequest,
+  | 'welcomeMessage'
+  | 'primaryColor'
+  | 'secondaryColor'
+  | 'backgroundImageUrl'
+  | 'coverImageUrl'
+  | 'musicUrl'
+>;
+
 /** Response from `GET /api/events/:eventId/dashboard`. */
 export interface EventDashboardApiResponse {
   event: {
