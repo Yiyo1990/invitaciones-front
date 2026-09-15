@@ -106,10 +106,7 @@ export class EventService {
 
         return this.http
           .post<InvitationApiResponse>(`${this.eventsUrl}/${created.id}/invitation`, invitationBody)
-          .pipe(
-            map(() => created),
-            catchError(() => of(created)),
-          );
+          .pipe(map(() => created));
       }),
     );
   }

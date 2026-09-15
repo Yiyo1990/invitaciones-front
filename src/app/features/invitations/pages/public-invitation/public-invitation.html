@@ -1,178 +1,203 @@
-@if (invitation() === undefined) {
+@if (pageState() === 'LOADING') {
   <div class="flex min-h-screen items-center justify-center bg-stone-100" role="status" aria-live="polite">
     <div class="h-8 w-8 animate-spin rounded-full border-2 border-stone-300 border-t-amber-700" aria-hidden="true"></div>
     <span class="sr-only">Cargando invitación…</span>
   </div>
-} @else if (invitation() === null) {
+} @else if (pageState() === 'NOT_FOUND') {
   <div class="flex min-h-screen flex-col items-center justify-center bg-stone-100 px-6 text-center">
     <p class="font-serif text-2xl text-stone-800">Invitación no encontrada</p>
     <p class="mt-2 text-sm text-stone-500">
-      {{ loadError() || 'Verifica que el enlace sea correcto.' }}
+      Verifica que el enlace sea correcto o que la invitación esté publicada.
+    </p>
+  </div>
+} @else if (pageState() === 'ERROR') {
+  <div class="flex min-h-screen flex-col items-center justify-center bg-stone-100 px-6 text-center">
+    <p class="font-serif text-2xl text-stone-800">No se pudo cargar la invitación</p>
+    <p class="mt-2 text-sm text-stone-500">
+      {{ loadError() }}
     </p>
   </div>
 } @else {
   @let data = invitation()!;
 
-  <div class="invitation-page min-h-screen" [style]="themeStyles()">
-    @if (data.musicUrl) {
-      <audio
-        #musicAudio
-        [src]="data.musicUrl"
-        preload="none"
-        (ended)="onMusicEnded()"
-      ></audio>
-      <button
-        type="button"
-        (click)="toggleMusic()"
-        class="music-toggle fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white/95 px-4 py-2.5 text-sm font-medium text-stone-700 shadow-lg backdrop-blur transition-colors hover:bg-white"
-      >
-        {{ musicPlaying() ? '❚❚ Pausar música' : '♫ Reproducir música' }}
-      </button>
-    }
-
-    <header class="relative flex min-h-[85vh] items-end justify-center overflow-hidden sm:min-h-screen">
-      <img
-        [src]="data.heroImage"
-        [alt]="data.names"
-        class="absolute inset-0 h-full w-full object-cover"
-      />
-      <div class="hero-overlay absolute inset-0"></div>
-
-      <div class="hero-content relative z-10 px-6 pb-16 pt-32 text-center text-white sm:pb-24">
-        <p class="hero-animate text-xs uppercase tracking-[0.35em] text-white/80 sm:text-sm">
-          {{ data.headline }}
-        </p>
-        <h1 class="hero-animate hero-animate-delay-1 mt-4 font-serif text-4xl font-light tracking-wide sm:text-6xl md:text-7xl">
-          {{ data.names }}
-        </h1>
-        <div
-          class="hero-animate hero-animate-delay-2 mx-auto mt-6 h-px w-16"
-          [style.background-color]="'color-mix(in srgb, var(--invitation-primary) 70%, white)'"
-        ></div>
-        <p class="hero-animate hero-animate-delay-3 mt-6 font-serif text-lg text-white/90 sm:text-xl">
-          {{ data.eventDate | date: "d 'de' MMMM, y" : undefined : 'es' }}
-        </p>
-      </div>
-    </header>
-
-    <section class="section-animate -mt-10 relative z-20 mx-auto max-w-lg px-6">
-      <app-invitation-countdown [targetDate]="data.eventDate" />
-    </section>
-
-    @if (data.hasWelcomeMessage) {
-      <section class="section-animate mx-auto max-w-2xl px-6 py-16 text-center sm:py-20">
-        <div
-          class="mx-auto mb-6 h-px w-12"
-          [style.background-color]="'color-mix(in srgb, var(--invitation-primary) 45%, transparent)'"
-        ></div>
-        <p class="font-serif text-lg leading-relaxed text-stone-600 sm:text-xl">
-          {{ data.welcomeMessage }}
-        </p>
-      </section>
-    }
-
-    <section class="mx-auto max-w-3xl space-y-6 px-6 pb-16">
-      <app-invitation-venue title="Ceremonia" [venue]="data.ceremony" />
-      <app-invitation-venue title="Recepción" [venue]="data.reception" />
-    </section>
-
-    <section
-      class="section-animate themed-band py-14 text-center"
-      [class.has-bg-image]="!!data.backgroundImageUrl"
-      [style.background-image]="data.backgroundImageUrl ? 'url(' + data.backgroundImageUrl + ')' : null"
+  @if (data.musicUrl) {
+    <audio
+      #musicAudio
+      [src]="data.musicUrl"
+      preload="none"
+      (ended)="onMusicEnded()"
+    ></audio>
+    <button
+      type="button"
+      (click)="toggleMusic()"
+      class="music-toggle fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white/95 px-4 py-2.5 text-sm font-medium text-stone-700 shadow-lg backdrop-blur transition-colors hover:bg-white"
     >
-      <div class="themed-band-inner mx-auto max-w-md px-6">
-        <p class="text-xs uppercase tracking-[0.3em] text-stone-500">Código de vestimenta</p>
-        <p class="mt-3 font-serif text-3xl text-stone-800">{{ data.dressCode }}</p>
-      </div>
-    </section>
+      {{ musicPlaying() ? '❚❚ Pausar música' : '♫ Reproducir música' }}
+    </button>
+  }
 
-    @if (data.galleryImages.length > 0) {
-      <section class="section-animate py-16 sm:py-20">
-        <div class="mx-auto max-w-4xl px-6">
-          <h2 class="mb-8 text-center font-serif text-2xl text-stone-800 sm:text-3xl">Galería</h2>
-          <div class="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3">
-            @for (image of data.galleryImages; track image; let i = $index) {
-              <div
-                class="gallery-item aspect-square overflow-hidden rounded-lg"
-                [style.animation-delay.ms]="i * 80"
-              >
-                <img
-                  [src]="image"
-                  alt="Foto del evento"
-                  class="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
-                  loading="lazy"
-                />
-              </div>
-            }
-          </div>
-        </div>
-      </section>
+  @switch (rendererKey()) {
+    @case ('wedding-eternal-garden') {
+      <app-wedding-eternal-garden
+        [data]="data"
+        [canRsvp]="canRsvp()"
+        (rsvpRequested)="openRsvpModal()"
+      />
     }
-
-    @if (data.giftRegistry.length > 0) {
-      <section class="section-animate bg-white/50 py-14">
-        <div class="mx-auto max-w-md px-6 text-center">
-          <h2 class="font-serif text-2xl text-stone-800">Mesa de regalos</h2>
-          <div class="mt-6 flex flex-col gap-3">
-            @for (store of data.giftRegistry; track store.url) {
-              <a
-                [href]="store.url"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="rounded-full border border-stone-300 px-6 py-3 text-sm text-stone-700 transition-colors hover:bg-stone-100"
-              >
-                {{ store.name }}
-              </a>
-            }
-          </div>
-        </div>
-      </section>
+    @case ('birthday-adventure') {
+      <app-birthday-adventure
+        [data]="data"
+        [canRsvp]="canRsvp()"
+        (rsvpRequested)="openRsvpModal()"
+      />
     }
-
-    <section id="rsvp" class="section-animate py-16 sm:py-20">
-      <div class="mx-auto max-w-md px-6 text-center">
-        <h2 class="font-serif text-2xl text-stone-800 sm:text-3xl">Confirma tu asistencia</h2>
-        @if (canRsvp()) {
-          <p class="mt-3 text-sm text-stone-500">
-            Por favor confirma antes del evento para agilizar la organización.
-          </p>
-          <button
-            type="button"
-            (click)="openRsvpModal()"
-            class="rsvp-button mt-8 inline-flex w-full items-center justify-center rounded-full px-8 py-4 text-sm font-medium uppercase tracking-widest text-white transition-all hover:brightness-110 hover:shadow-lg sm:w-auto"
-          >
-            Confirmar asistencia
-          </button>
-        } @else {
-          <p class="mt-3 text-sm text-stone-500">
-            Usa el enlace personal que recibiste del anfitrión para confirmar tu asistencia.
-          </p>
-        }
-      </div>
-    </section>
-
-    <footer class="border-t border-stone-200/60 bg-white/40 py-10 text-center">
-      <p class="mx-auto max-w-sm px-6 font-serif text-base italic text-stone-600">
-        {{ data.footerMessage }}
-      </p>
-      <p class="mt-4 text-xs text-stone-400">{{ data.names }}</p>
-    </footer>
-
-    @if (canRsvp()) {
-      <app-modal
-        [open]="rsvpModalOpen()"
-        title="Confirmar asistencia"
-        (closed)="closeRsvpModal()"
-      >
-        @if (rsvpModalOpen()) {
-          <app-rsvp-form
-            [invitationSlug]="data.slug"
-            [guestCode]="guestCode()!"
-            (cancelled)="closeRsvpModal()"
+    @default {
+      <div class="invitation-page min-h-screen" [attr.data-renderer]="rendererKey()" [style]="themeStyles()">
+        <header class="relative flex min-h-[85vh] items-end justify-center overflow-hidden sm:min-h-screen">
+          <img
+            [src]="data.heroImage"
+            [alt]="data.names"
+            class="absolute inset-0 h-full w-full object-cover"
           />
+          <div class="hero-overlay absolute inset-0"></div>
+
+          <div class="hero-content relative z-10 px-6 pb-16 pt-32 text-center text-white sm:pb-24">
+            <p class="hero-animate text-xs uppercase tracking-[0.35em] text-white/80 sm:text-sm">
+              {{ data.headline }}
+            </p>
+            <h1 class="hero-animate hero-animate-delay-1 mt-4 font-serif text-4xl font-light tracking-wide sm:text-6xl md:text-7xl">
+              {{ data.names }}
+            </h1>
+            <div
+              class="hero-animate hero-animate-delay-2 mx-auto mt-6 h-px w-16"
+              [style.background-color]="'color-mix(in srgb, var(--invitation-primary) 70%, white)'"
+            ></div>
+            <p class="hero-animate hero-animate-delay-3 mt-6 font-serif text-lg text-white/90 sm:text-xl">
+              {{ data.eventDate | date: "d 'de' MMMM, y" : undefined : 'es' }}
+            </p>
+          </div>
+        </header>
+
+        <section class="section-animate -mt-10 relative z-20 mx-auto max-w-lg px-6">
+          <app-invitation-countdown [targetDate]="data.eventDate" />
+        </section>
+
+        @if (data.hasWelcomeMessage) {
+          <section class="section-animate mx-auto max-w-2xl px-6 py-16 text-center sm:py-20">
+            <div
+              class="mx-auto mb-6 h-px w-12"
+              [style.background-color]="'color-mix(in srgb, var(--invitation-primary) 45%, transparent)'"
+            ></div>
+            <p class="font-serif text-lg leading-relaxed text-stone-600 sm:text-xl">
+              {{ data.welcomeMessage }}
+            </p>
+          </section>
         }
-      </app-modal>
+
+        <section class="mx-auto max-w-3xl space-y-6 px-6 pb-16">
+          <app-invitation-venue title="Ceremonia" [venue]="data.ceremony" />
+          <app-invitation-venue title="Recepción" [venue]="data.reception" />
+        </section>
+
+        <section
+          class="section-animate themed-band py-14 text-center"
+          [class.has-bg-image]="!!data.backgroundImageUrl"
+          [style.background-image]="data.backgroundImageUrl ? 'url(' + data.backgroundImageUrl + ')' : null"
+        >
+          <div class="themed-band-inner mx-auto max-w-md px-6">
+            <p class="text-xs uppercase tracking-[0.3em] text-stone-500">Código de vestimenta</p>
+            <p class="mt-3 font-serif text-3xl text-stone-800">{{ data.dressCode }}</p>
+          </div>
+        </section>
+
+        @if (data.galleryImages.length > 0) {
+          <section class="section-animate py-16 sm:py-20">
+            <div class="mx-auto max-w-4xl px-6">
+              <h2 class="mb-8 text-center font-serif text-2xl text-stone-800 sm:text-3xl">Galería</h2>
+              <div class="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3">
+                @for (image of data.galleryImages; track image; let i = $index) {
+                  <div
+                    class="gallery-item aspect-square overflow-hidden rounded-lg"
+                    [style.animation-delay.ms]="i * 80"
+                  >
+                    <img
+                      [src]="image"
+                      alt="Foto del evento"
+                      class="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                      loading="lazy"
+                    />
+                  </div>
+                }
+              </div>
+            </div>
+          </section>
+        }
+
+        @if (data.giftRegistry.length > 0) {
+          <section class="section-animate bg-white/50 py-14">
+            <div class="mx-auto max-w-md px-6 text-center">
+              <h2 class="font-serif text-2xl text-stone-800">Mesa de regalos</h2>
+              <div class="mt-6 flex flex-col gap-3">
+                @for (store of data.giftRegistry; track store.url) {
+                  <a
+                    [href]="store.url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="rounded-full border border-stone-300 px-6 py-3 text-sm text-stone-700 transition-colors hover:bg-stone-100"
+                  >
+                    {{ store.name }}
+                  </a>
+                }
+              </div>
+            </div>
+          </section>
+        }
+
+        <section id="rsvp" class="section-animate py-16 sm:py-20">
+          <div class="mx-auto max-w-md px-6 text-center">
+            <h2 class="font-serif text-2xl text-stone-800 sm:text-3xl">Confirma tu asistencia</h2>
+            @if (canRsvp()) {
+              <p class="mt-3 text-sm text-stone-500">
+                Por favor confirma antes del evento para agilizar la organización.
+              </p>
+              <button
+                type="button"
+                (click)="openRsvpModal()"
+                class="rsvp-button mt-8 inline-flex w-full items-center justify-center rounded-full px-8 py-4 text-sm font-medium uppercase tracking-widest text-white transition-all hover:brightness-110 hover:shadow-lg sm:w-auto"
+              >
+                Confirmar asistencia
+              </button>
+            } @else {
+              <p class="mt-3 text-sm text-stone-500">
+                Usa el enlace personal que recibiste del anfitrión para confirmar tu asistencia.
+              </p>
+            }
+          </div>
+        </section>
+
+        <footer class="border-t border-stone-200/60 bg-white/40 py-10 text-center">
+          <p class="mx-auto max-w-sm px-6 font-serif text-base italic text-stone-600">
+            {{ data.footerMessage }}
+          </p>
+          <p class="mt-4 text-xs text-stone-400">{{ data.names }}</p>
+        </footer>
+      </div>
     }
-  </div>
+  }
+
+  @if (canRsvp()) {
+    <app-modal
+      [open]="rsvpModalOpen()"
+      title="Confirmar asistencia"
+      (closed)="closeRsvpModal()"
+    >
+      @if (rsvpModalOpen()) {
+        <app-rsvp-form
+          [invitationSlug]="data.slug"
+          [guestCode]="guestCode()!"
+          (cancelled)="closeRsvpModal()"
+        />
+      }
+    </app-modal>
+  }
 }

@@ -53,6 +53,10 @@ export function mapEventDetailToFormValue(
     eventTime: formatTimeForInput(detail.time),
     venueName: detail.venue ?? '',
     venueAddress: detail.address ?? '',
+    latitude: detail.latitude ?? null,
+    longitude: detail.longitude ?? null,
+    placeId: detail.placeId ?? null,
+    googleMapsUrl: detail.googleMapsUrl ?? null,
     dressCode: detail.dressCode ?? '',
     templateId: resolveTemplateId(detail, templates),
   };

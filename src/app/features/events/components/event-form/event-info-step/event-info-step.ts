@@ -1,9 +1,11 @@
 import { Component, input } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 
+import { LocationPickerComponent } from '../../location-picker/location-picker';
+
 @Component({
   selector: 'app-event-info-step',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, LocationPickerComponent],
   templateUrl: './event-info-step.html',
   styleUrl: './event-info-step.css',
 })

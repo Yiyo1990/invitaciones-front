@@ -14,6 +14,10 @@ export interface EventApiResponse {
   city: string | null;
   state: string | null;
   country: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  placeId?: string | null;
+  googleMapsUrl?: string | null;
   description: string | null;
   dressCode: string | null;
   status: EventStatus;
@@ -34,6 +38,10 @@ export interface CreateEventRequest {
   city?: string;
   state?: string;
   country?: string;
+  latitude?: number;
+  longitude?: number;
+  placeId?: string;
+  googleMapsUrl?: string;
   description?: string;
   dressCode?: string;
 }
@@ -50,6 +58,10 @@ export type UpdateEventRequest = Partial<{
   city: string | null;
   state: string | null;
   country: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  placeId: string | null;
+  googleMapsUrl: string | null;
   description: string | null;
   dressCode: string | null;
 }>;
@@ -163,6 +175,10 @@ export interface PublicInvitationApiResponse {
     city: string | null;
     state: string | null;
     country: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    placeId?: string | null;
+    googleMapsUrl?: string | null;
     description: string | null;
     dressCode: string | null;
   };

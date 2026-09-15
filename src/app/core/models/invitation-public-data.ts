@@ -1,3 +1,5 @@
+import { EventType } from './event-type';
+
 export interface VenueInfo {
   name: string;
   time: string;
@@ -12,6 +14,8 @@ export interface GiftRegistryLink {
 
 export interface InvitationPublicData {
   slug: string;
+  eventType: EventType;
+  templateId: string | null;
   heroImage: string;
   names: string;
   headline: string;
@@ -28,6 +32,10 @@ export interface InvitationPublicData {
   footerMessage: string;
   primaryColor: string;
   secondaryColor: string;
+  /** Raw invitation color before app/template defaults; null when unset. */
+  invitationPrimaryColor: string | null;
+  /** Raw invitation color before app/template defaults; null when unset. */
+  invitationSecondaryColor: string | null;
   backgroundImageUrl?: string;
   coverImageUrl?: string;
   musicUrl?: string;

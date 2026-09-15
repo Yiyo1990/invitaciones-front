@@ -10,10 +10,21 @@ import { InvitationCountdown } from '../../components/invitation-countdown/invit
 import { InvitationVenue } from '../../components/invitation-venue/invitation-venue';
 import { RsvpFormComponent } from '../../components/rsvp-form/rsvp-form';
 import { InvitationService } from '../../services/invitation.service';
+import { WeddingEternalGarden } from '../../templates/wedding-eternal-garden/wedding-eternal-garden';
+import { BirthdayAdventure } from '../../templates/birthday-adventure/birthday-adventure';
+import { resolveInvitationRenderer } from '../../utils/invitation-renderer.registry';
 
 @Component({
   selector: 'app-public-invitation-page',
-  imports: [DatePipe, InvitationCountdown, InvitationVenue, Modal, RsvpFormComponent],
+  imports: [
+    DatePipe,
+    InvitationCountdown,
+    InvitationVenue,
+    Modal,
+    RsvpFormComponent,
+    WeddingEternalGarden,
+    BirthdayAdventure,
+  ],
   templateUrl: './public-invitation.html',
   styleUrl: './public-invitation.css',
 })
@@ -59,6 +70,22 @@ export class PublicInvitationPage {
   );
 
   protected readonly canRsvp = computed(() => !!this.guestCode());
+
+  protected readonly pageState = computed(() => {
+    const data = this.invitation();
+    if (data === undefined) {
+      return 'LOADING' as const;
+    }
+    if (data === null) {
+      return this.loadError() ? ('ERROR' as const) : ('NOT_FOUND' as const);
+    }
+    return 'READY' as const;
+  });
+
+  /** Template-based renderer key; unknown templates fall back to generic. */
+  protected readonly rendererKey = computed(() =>
+    resolveInvitationRenderer(this.invitation()?.templateId),
+  );
 
   protected readonly themeStyles = computed(() => {
     const data = this.invitation();

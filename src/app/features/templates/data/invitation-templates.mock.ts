@@ -31,6 +31,16 @@ export const INVITATION_TEMPLATES_MOCK: InvitationTemplate[] = [
     isActive: true,
   },
   {
+    id: 'wedding-eternal-garden',
+    name: 'Jardín Eterno',
+    category: EventType.Wedding,
+    description:
+      'Diseño botánico, romántico y elegante en tonos crema y verde salvia.',
+    previewImage: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=800&q=80',
+    isPremium: false,
+    isActive: true,
+  },
+  {
     id: 'quince-elegant',
     name: 'XV Elegante',
     category: EventType.Quinceanera,
@@ -54,6 +64,16 @@ export const INVITATION_TEMPLATES_MOCK: InvitationTemplate[] = [
     category: EventType.Birthday,
     description: 'Colores vibrantes y estilo divertido para fiestas de niños.',
     previewImage: 'https://images.unsplash.com/photo-1464349153735-7db50ed83c84?w=800&q=80',
+    isPremium: false,
+    isActive: true,
+  },
+  {
+    id: 'birthday-adventure',
+    name: 'Aventura de Cumpleaños',
+    category: EventType.Birthday,
+    description:
+      'Una invitación infantil alegre y colorida, llena de globos, confeti y diversión.',
+    previewImage: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80',
     isPremium: false,
     isActive: true,
   },

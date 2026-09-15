@@ -77,6 +77,10 @@ export class EventFormComponent {
         eventTime: value.eventTime ?? '',
         venueName: value.venueName ?? '',
         venueAddress: value.venueAddress ?? '',
+        latitude: value.latitude ?? null,
+        longitude: value.longitude ?? null,
+        placeId: value.placeId ?? null,
+        googleMapsUrl: value.googleMapsUrl ?? null,
         dressCode: value.dressCode ?? '',
         templateId: value.templateId ?? '',
       });

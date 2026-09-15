@@ -1,0 +1,230 @@
+<article class="garden-shell" [style]="themeStyles()">
+  <div class="garden-card">
+    <svg class="botanical botanical-top" viewBox="0 0 220 160" aria-hidden="true" focusable="false">
+      <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+        <path d="M40 10c18 28 22 58 8 92" />
+        <path d="M40 40c14-2 28 8 34 22" />
+        <path d="M36 58c16 0 30 14 32 30" />
+        <path d="M34 78c14 4 24 18 24 34" />
+        <ellipse cx="72" cy="58" rx="10" ry="5" transform="rotate(-28 72 58)" fill="currentColor" opacity="0.35" stroke="none" />
+        <ellipse cx="68" cy="84" rx="11" ry="5.5" transform="rotate(-18 68 84)" fill="currentColor" opacity="0.3" stroke="none" />
+        <ellipse cx="58" cy="108" rx="10" ry="5" transform="rotate(-8 58 108)" fill="currentColor" opacity="0.28" stroke="none" />
+        <path d="M180 8c-20 30-24 60-10 96" />
+        <path d="M180 38c-14-2-28 8-34 22" />
+        <path d="M184 56c-16 0-30 14-32 30" />
+        <ellipse cx="148" cy="56" rx="10" ry="5" transform="rotate(28 148 56)" fill="currentColor" opacity="0.35" stroke="none" />
+        <ellipse cx="152" cy="82" rx="11" ry="5.5" transform="rotate(18 152 82)" fill="currentColor" opacity="0.3" stroke="none" />
+      </g>
+    </svg>
+
+    <header class="garden-section garden-intro garden-fade">
+      <p class="garden-quote">{{ quote }}</p>
+
+      @if (initials().label) {
+        <p class="garden-monogram" aria-label="Iniciales de la pareja">
+          @if (initials().first) {
+            <span>{{ initials().first }}</span>
+          }
+          @if (initials().first && initials().second) {
+            <span class="garden-monogram-divider" aria-hidden="true"></span>
+          }
+          @if (initials().second) {
+            <span>{{ initials().second }}</span>
+          }
+        </p>
+      }
+
+      <p class="garden-kicker">Nuestra boda</p>
+      <span class="garden-heart" aria-hidden="true">♡</span>
+    </header>
+
+    <section class="garden-hero" aria-label="Fotografía principal">
+      @if (heroSrc(); as hero) {
+        <div class="garden-hero-frame">
+          <img [src]="hero" [alt]="'Fotografía de ' + data().names" class="garden-hero-image" />
+          <div class="garden-hero-fade" aria-hidden="true"></div>
+        </div>
+      } @else {
+        <div class="garden-hero-placeholder" role="img" [attr.aria-label]="'Invitación de ' + data().names">
+          <svg class="botanical botanical-hero" viewBox="0 0 120 80" aria-hidden="true" focusable="false">
+            <g fill="currentColor" opacity="0.45">
+              <ellipse cx="40" cy="40" rx="18" ry="8" transform="rotate(-35 40 40)" />
+              <ellipse cx="70" cy="36" rx="16" ry="7" transform="rotate(25 70 36)" />
+              <ellipse cx="58" cy="52" rx="14" ry="6" transform="rotate(-10 58 52)" />
+            </g>
+          </svg>
+        </div>
+      }
+    </section>
+
+    @if (data().hasWelcomeMessage) {
+      <section class="garden-section garden-fade">
+        <p class="garden-welcome">{{ data().welcomeMessage }}</p>
+      </section>
+    }
+
+    <section class="garden-section garden-names garden-fade">
+      <svg class="botanical botanical-side botanical-side-left" viewBox="0 0 80 160" aria-hidden="true" focusable="false">
+        <g fill="currentColor" opacity="0.4">
+          <ellipse cx="30" cy="40" rx="16" ry="7" transform="rotate(-40 30 40)" />
+          <ellipse cx="38" cy="70" rx="15" ry="6.5" transform="rotate(-25 38 70)" />
+          <ellipse cx="34" cy="100" rx="14" ry="6" transform="rotate(-15 34 100)" />
+          <path d="M28 20c4 30 2 70-6 110" fill="none" stroke="currentColor" stroke-width="1.2" />
+        </g>
+      </svg>
+      <svg class="botanical botanical-side botanical-side-right" viewBox="0 0 80 160" aria-hidden="true" focusable="false">
+        <g fill="currentColor" opacity="0.4">
+          <ellipse cx="50" cy="40" rx="16" ry="7" transform="rotate(40 50 40)" />
+          <ellipse cx="42" cy="70" rx="15" ry="6.5" transform="rotate(25 42 70)" />
+          <ellipse cx="46" cy="100" rx="14" ry="6" transform="rotate(15 46 100)" />
+          <path d="M52 20c-4 30-2 70 6 110" fill="none" stroke="currentColor" stroke-width="1.2" />
+        </g>
+      </svg>
+
+      <p class="garden-name-script">{{ couple().first }}</p>
+      @if (couple().second) {
+        <p class="garden-ampersand">&</p>
+        <p class="garden-name-script">{{ couple().second }}</p>
+      }
+    </section>
+
+    @if (dateParts(); as date) {
+      <section class="garden-section garden-date garden-fade" aria-label="Fecha del evento">
+        <p class="garden-date-month">{{ date.month }}</p>
+        <div class="garden-date-row">
+          <span>{{ date.weekday }}</span>
+          <span class="garden-date-day">{{ date.day }}</span>
+          <span>{{ date.year }}</span>
+        </div>
+      </section>
+    }
+
+    <div class="garden-separator" aria-hidden="true">
+      <span class="garden-separator-line"></span>
+      <span class="garden-separator-icon">♡</span>
+      <span class="garden-separator-line"></span>
+    </div>
+
+    @if (hasVenue()) {
+      <section class="garden-section garden-venue garden-fade">
+        @if (data().ceremony.time && data().ceremony.time !== 'Por confirmar') {
+          <p class="garden-venue-time">{{ data().ceremony.time }}</p>
+        }
+        <h2 class="garden-venue-title">Ceremonia</h2>
+        @if (data().ceremony.name && data().ceremony.name !== 'Ubicación') {
+          <p class="garden-venue-name">{{ data().ceremony.name }}</p>
+        }
+        @if (data().ceremony.address && data().ceremony.address !== 'Ubicación por confirmar') {
+          <p class="garden-venue-address">{{ data().ceremony.address }}</p>
+        }
+        <a
+          class="garden-button"
+          [href]="data().ceremony.mapsUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Ver ubicación
+        </a>
+      </section>
+    }
+
+    @if (hasDistinctReception()) {
+      <div class="garden-mini-heart" aria-hidden="true">♡</div>
+      <section class="garden-section garden-venue garden-fade">
+        @if (data().reception.time && data().reception.time !== 'Por confirmar') {
+          <p class="garden-venue-time">{{ data().reception.time }}</p>
+        }
+        <h2 class="garden-venue-title">Recepción</h2>
+        @if (data().reception.name && data().reception.name !== 'Ubicación') {
+          <p class="garden-venue-name">{{ data().reception.name }}</p>
+        }
+        @if (data().reception.address && data().reception.address !== 'Ubicación por confirmar') {
+          <p class="garden-venue-address">{{ data().reception.address }}</p>
+        }
+        <a
+          class="garden-button"
+          [href]="data().reception.mapsUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Ver ubicación
+        </a>
+      </section>
+    }
+
+    @if (hasDressCode()) {
+      <section class="garden-section garden-fade">
+        <p class="garden-kicker">Código de vestimenta</p>
+        <p class="garden-dress">{{ data().dressCode }}</p>
+      </section>
+    }
+
+    @if (hasGiftRegistry()) {
+      <section class="garden-section garden-fade">
+        <p class="garden-kicker">Sugerencia de regalo</p>
+        <div class="garden-gifts">
+          @for (gift of data().giftRegistry; track gift.url) {
+            <a
+              class="garden-button garden-button-outline"
+              [href]="gift.url"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {{ gift.name }}
+            </a>
+          }
+        </div>
+      </section>
+    }
+
+    <section class="garden-section garden-rsvp garden-fade" id="rsvp">
+      <span class="garden-heart" aria-hidden="true">♡</span>
+      <h2 class="garden-venue-title">Confirmación de asistencia</h2>
+      @if (canRsvp()) {
+        <p class="garden-rsvp-copy">
+          Nos encantará saber si podrás acompañarnos en este día especial.
+        </p>
+        <button type="button" class="garden-button" (click)="requestRsvp()">
+          Confirmar asistencia
+        </button>
+      } @else {
+        <p class="garden-rsvp-copy">
+          Usa el enlace personal que recibiste del anfitrión para confirmar tu asistencia.
+        </p>
+      }
+    </section>
+
+    <section class="garden-section garden-closing garden-fade">
+      <svg class="botanical botanical-sprig" viewBox="0 0 80 40" aria-hidden="true" focusable="false">
+        <g fill="currentColor" opacity="0.45">
+          <ellipse cx="28" cy="20" rx="12" ry="5" transform="rotate(-30 28 20)" />
+          <ellipse cx="52" cy="18" rx="12" ry="5" transform="rotate(28 52 18)" />
+        </g>
+      </svg>
+      <p class="garden-closing-text">{{ closingMessage }}</p>
+    </section>
+
+    @if (closingPhotoSrc(); as closingPhoto) {
+      <section class="garden-closing-photo garden-fade" aria-label="Fotografía de cierre">
+        <div class="garden-closing-frame">
+          <div class="garden-closing-fade-top" aria-hidden="true"></div>
+          <img
+            [src]="closingPhoto"
+            [alt]="'Fotografía adicional de ' + data().names"
+            class="garden-closing-image"
+            loading="lazy"
+          />
+        </div>
+      </section>
+    }
+
+    <svg class="botanical botanical-bottom" viewBox="0 0 220 120" aria-hidden="true" focusable="false">
+      <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+        <path d="M30 110c20-28 24-58 10-92" />
+        <path d="M190 110c-20-28-24-58-10-92" />
+        <ellipse cx="48" cy="70" rx="11" ry="5" transform="rotate(20 48 70)" fill="currentColor" opacity="0.32" stroke="none" />
+        <ellipse cx="172" cy="70" rx="11" ry="5" transform="rotate(-20 172 70)" fill="currentColor" opacity="0.32" stroke="none" />
+      </g>
+    </svg>
+  </div>
+</article>

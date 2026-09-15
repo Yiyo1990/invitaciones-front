@@ -8,6 +8,10 @@ export interface CreateEventForm {
   eventTime: string;
   venueName: string;
   venueAddress: string;
+  latitude: number | null;
+  longitude: number | null;
+  placeId: string | null;
+  googleMapsUrl: string | null;
   dressCode: string;
   templateId: string;
 }

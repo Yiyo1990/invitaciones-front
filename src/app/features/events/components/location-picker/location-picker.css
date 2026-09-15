@@ -1,0 +1,8 @@
+:host {
+  display: block;
+}
+
+/* Ensure Places dropdown appears above wizard cards. */
+:host ::ng-deep .pac-container {
+  z-index: 10000;
+}

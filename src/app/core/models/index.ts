@@ -4,6 +4,7 @@ export * from './auth-api';
 export * from './create-event-form';
 export * from './event-api';
 export * from './event-detail';
+export * from './event-location';
 export * from './event-status';
 export * from './event-summary';
 export * from './event-type';

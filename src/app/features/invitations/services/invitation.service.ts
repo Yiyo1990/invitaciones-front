@@ -10,14 +10,9 @@ import {
   UpdateInvitationCustomizationRequest,
   UpdateInvitationRequest,
 } from '../../../core/models/event-api';
-import { EVENT_TYPE_LABELS } from '../../../core/models/event-type';
 import { InvitationPublicData } from '../../../core/models/invitation-public-data';
 import { GuestStatus } from '../../../core/models/guest-status';
-import {
-  DEFAULT_INVITATION_PRIMARY_COLOR,
-  DEFAULT_INVITATION_SECONDARY_COLOR,
-  resolveInvitationColor,
-} from '../../../core/utils/invitation-style.util';
+import { mapPublicInvitation } from '../utils/map-public-invitation.util';
 
 export interface PublicGuestApiResponse {
   guestCode: string;
@@ -114,11 +109,27 @@ export class InvitationService {
     return this.updateCustomization(eventId, body);
   }
 
+  /** Authenticated: `POST /api/events/:eventId/invitation/publish`. */
+  publish(eventId: string): Observable<InvitationApiResponse> {
+    return this.http.post<InvitationApiResponse>(
+      `${this.eventsInvitationUrl(eventId)}/publish`,
+      {},
+    );
+  }
+
+  /** Authenticated: `POST /api/events/:eventId/invitation/unpublish`. */
+  unpublish(eventId: string): Observable<InvitationApiResponse> {
+    return this.http.post<InvitationApiResponse>(
+      `${this.eventsInvitationUrl(eventId)}/unpublish`,
+      {},
+    );
+  }
+
   getBySlug(slug: string): Observable<InvitationPublicData | null> {
     return this.http
       .get<PublicInvitationApiResponse>(`${environment.apiUrl}/public/events/${slug}`)
       .pipe(
-        map((response) => this.mapPublicInvitation(response)),
+        map((response) => mapPublicInvitation(response)),
         catchError((error: unknown) => {
           if (error instanceof HttpErrorResponse && error.status === 404) {
             return of(null);
@@ -146,69 +157,5 @@ export class InvitationService {
       `${environment.apiUrl}/public/guests/${guestCode}/rsvp`,
       body,
     );
-  }
-
-  private mapPublicInvitation(api: PublicInvitationApiResponse): InvitationPublicData {
-    const locationParts = [
-      api.event.venueName,
-      api.event.address,
-      api.event.city,
-      api.event.state,
-      api.event.country,
-    ].filter((part): part is string => !!part && part.trim().length > 0);
-
-    const address = locationParts.join(', ') || 'Ubicación por confirmar';
-    const timeLabel = api.event.eventTime ? `${api.event.eventTime} hrs` : '';
-    const names =
-      api.invitation.title?.trim() ||
-      api.event.name ||
-      EVENT_TYPE_LABELS[api.event.eventType] ||
-      'Invitación';
-
-    const welcomeFromInvitation = api.invitation.welcomeMessage?.trim() || '';
-    const welcomeFallback = api.event.description?.trim() || '';
-
-    const coverImageUrl = api.invitation.coverImageUrl?.trim() || '';
-    const backgroundImageUrl = api.invitation.backgroundImageUrl?.trim() || '';
-
-    return {
-      slug: api.slug,
-      heroImage:
-        coverImageUrl ||
-        backgroundImageUrl ||
-        'https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&q=80',
-      names,
-      headline: api.invitation.subtitle?.trim() || EVENT_TYPE_LABELS[api.event.eventType] || 'Te invitamos',
-      eventDate: new Date(api.event.eventDate),
-      welcomeMessage: welcomeFromInvitation || welcomeFallback,
-      hasWelcomeMessage: welcomeFromInvitation.length > 0 || welcomeFallback.length > 0,
-      ceremony: {
-        name: api.event.venueName || 'Ceremonia',
-        time: timeLabel || 'Por confirmar',
-        address,
-        mapsUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`,
-      },
-      reception: {
-        name: api.event.venueName || 'Recepción',
-        time: timeLabel || 'Por confirmar',
-        address,
-        mapsUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`,
-      },
-      dressCode: api.event.dressCode?.trim() || 'Por confirmar',
-      galleryImages: coverImageUrl ? [coverImageUrl] : [],
-      giftRegistry: [],
-      footerMessage: 'Gracias por acompañarnos en este momento especial.',
-      primaryColor: resolveInvitationColor(
-        api.invitation.primaryColor,
-        DEFAULT_INVITATION_PRIMARY_COLOR,
-      ),
-      secondaryColor: resolveInvitationColor(
-        api.invitation.secondaryColor,
-        DEFAULT_INVITATION_SECONDARY_COLOR,
-      ),
-      backgroundImageUrl: backgroundImageUrl || undefined,
-      coverImageUrl: coverImageUrl || undefined,
-      musicUrl: api.invitation.musicUrl?.trim() || undefined,
-    };
   }
 }

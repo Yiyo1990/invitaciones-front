@@ -21,6 +21,10 @@ export function createEventFormGroup(
     eventTime: [initial?.eventTime ?? '', Validators.required],
     venueName: [initial?.venueName ?? '', Validators.required],
     venueAddress: [initial?.venueAddress ?? '', Validators.required],
+    latitude: [initial?.latitude ?? null],
+    longitude: [initial?.longitude ?? null],
+    placeId: [initial?.placeId ?? null],
+    googleMapsUrl: [initial?.googleMapsUrl ?? null],
     dressCode: [initial?.dressCode ?? ''],
     templateId: [initial?.templateId ?? '', Validators.required],
   });

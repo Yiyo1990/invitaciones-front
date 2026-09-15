@@ -1,0 +1,577 @@
+:host {
+  display: block;
+  font-family: 'Fredoka', 'Nunito', 'Lato', system-ui, sans-serif;
+}
+
+.adventure-shell {
+  --birthday-primary: #1e88e5;
+  --birthday-secondary: #ff9800;
+  --birthday-sky: #87cefa;
+  --birthday-orange: #ff9800;
+  --birthday-yellow: #ffd54f;
+  --birthday-pink: #ff5c7a;
+  --birthday-purple: #7e57c2;
+  --birthday-teal: #4dd0b0;
+  --birthday-text: #1a3a6b;
+
+  min-height: 100vh;
+  background: linear-gradient(180deg, #b3e5fc 0%, var(--birthday-sky) 45%, #81d4fa 100%);
+  padding: 0;
+}
+
+.adventure-shell.has-bg-image {
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+}
+
+.adventure-shell.has-bg-image::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--birthday-sky) 72%, transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.adventure-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--birthday-sky) 88%, white) 0%,
+    var(--birthday-sky) 40%,
+    #7ec8f5 100%
+  );
+  color: var(--birthday-text);
+  padding-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+  .adventure-shell {
+    padding: 2rem 1rem 3rem;
+  }
+
+  .adventure-card {
+    max-width: 26rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 20px 50px rgba(21, 101, 192, 0.25);
+  }
+}
+
+/* Confetti */
+.adventure-confetti {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.dot,
+.star,
+.flower {
+  position: absolute;
+}
+
+.dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+}
+
+.d1 { top: 18%; left: 8%; background: #2196f3; }
+.d2 { top: 28%; right: 10%; background: #ff9800; }
+.d3 { top: 42%; left: 12%; background: #ff5c7a; }
+.d4 { top: 55%; right: 14%; background: #ffd54f; }
+.d5 { top: 68%; left: 6%; background: #7e57c2; }
+.d6 { top: 78%; right: 8%; background: #4dd0b0; }
+.d7 { top: 35%; left: 48%; background: #ff80ab; width: 0.35rem; height: 0.35rem; }
+
+.star {
+  font-size: 0.7rem;
+  line-height: 1;
+  color: #ff9800;
+}
+
+.s1 { top: 22%; left: 18%; color: #ff9800; animation: twinkle 2.8s ease-in-out infinite; }
+.s2 { top: 48%; right: 16%; color: #7e57c2; animation: twinkle 3.2s ease-in-out infinite 0.4s; }
+.s3 { top: 62%; left: 22%; color: #ffd54f; animation: twinkle 2.4s ease-in-out infinite 0.8s; }
+
+.flower {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  box-shadow:
+    0.35rem 0 0 -0.08rem currentColor,
+    -0.35rem 0 0 -0.08rem currentColor,
+    0 0.35rem 0 -0.08rem currentColor,
+    0 -0.35rem 0 -0.08rem currentColor;
+  background: #ffd54f;
+}
+
+.f1 { top: 30%; right: 22%; color: #fff; }
+.f2 { top: 72%; left: 18%; color: #f8bbd0; }
+.f3 { top: 50%; left: 6%; color: #fff; }
+
+/* Balloons */
+.adventure-balloons {
+  position: absolute;
+  top: 0.5rem;
+  z-index: 3;
+  pointer-events: none;
+  width: 4.5rem;
+}
+
+.balloons-left { left: 0.25rem; }
+.balloons-right { right: 0.25rem; }
+
+.balloon { width: 100%; height: auto; display: block; }
+.float-a { animation: floatY 4s ease-in-out infinite; }
+.float-b { animation: floatY 4.6s ease-in-out infinite 0.6s; }
+
+/* Header */
+.adventure-header {
+  position: relative;
+  z-index: 4;
+  padding: 1.25rem 1.25rem 0.5rem;
+  text-align: center;
+}
+
+.adventure-rainbow {
+  display: block;
+  width: min(92%, 20rem);
+  margin: 0 auto -1.5rem;
+  overflow: visible;
+}
+
+.cloud {
+  position: absolute;
+  top: 4.5rem;
+  width: 4.5rem;
+  height: 2rem;
+  background: #fff;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.cloud::before,
+.cloud::after {
+  content: '';
+  position: absolute;
+  background: #fff;
+  border-radius: 999px;
+}
+
+.cloud::before {
+  width: 2.2rem;
+  height: 2.2rem;
+  top: -1rem;
+  left: 0.7rem;
+}
+
+.cloud::after {
+  width: 1.7rem;
+  height: 1.7rem;
+  top: -0.65rem;
+  right: 0.55rem;
+}
+
+.cloud-left { left: 8%; }
+.cloud-right { right: 8%; }
+
+.adventure-invite {
+  margin: 1.75rem 0 0.55rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--birthday-text);
+}
+
+.adventure-banner {
+  display: inline-flex;
+  margin: 0 auto 0.65rem;
+  padding: 0.35rem 1.4rem;
+  background: var(--birthday-primary);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  clip-path: polygon(0.55rem 0, calc(100% - 0.55rem) 0, 100% 50%, calc(100% - 0.55rem) 100%, 0.55rem 100%, 0 50%);
+}
+
+.adventure-special {
+  margin: 0.35rem 0 0.75rem;
+  font-size: clamp(1.35rem, 6.5vw, 1.85rem);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--birthday-secondary);
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.55);
+}
+
+.adventure-tagline {
+  margin: 0 auto 0.5rem;
+  max-width: 16rem;
+  font-size: clamp(1rem, 4.2vw, 1.2rem);
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--birthday-text);
+}
+
+/* Name cloud */
+.adventure-hero {
+  position: relative;
+  z-index: 4;
+  padding: 0.75rem 1rem 0.25rem;
+  text-align: center;
+}
+
+.adventure-cloud {
+  position: relative;
+  margin: 0 auto;
+  max-width: 20rem;
+  padding: 2.2rem 1.25rem 1.5rem;
+  background: #fff;
+  border-radius: 50% 50% 45% 45% / 55% 55% 45% 45%;
+  box-shadow: 0 8px 0 rgba(25, 118, 210, 0.12);
+  animation: popIn 0.7s ease-out both;
+}
+
+.adventure-cloud::before,
+.adventure-cloud::after {
+  content: '';
+  position: absolute;
+  background: #fff;
+  border-radius: 999px;
+}
+
+.adventure-cloud::before {
+  width: 5rem;
+  height: 5rem;
+  left: -0.4rem;
+  top: 1.4rem;
+}
+
+.adventure-cloud::after {
+  width: 5.5rem;
+  height: 5.5rem;
+  right: -0.5rem;
+  top: 1.1rem;
+}
+
+.adventure-name,
+.adventure-cumple {
+  position: relative;
+  z-index: 1;
+}
+
+.adventure-name {
+  margin: 0;
+  font-size: clamp(2.1rem, 11vw, 3.4rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--birthday-primary) 75%, white);
+  -webkit-text-stroke: 2px var(--birthday-text);
+  paint-order: stroke fill;
+  text-shadow:
+    0 3px 0 #fff,
+    0 5px 10px rgba(25, 118, 210, 0.2);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.adventure-cumple {
+  margin: 0.2rem 0 0;
+  font-size: 1.15rem;
+  font-weight: 500;
+  font-style: italic;
+  color: var(--birthday-text);
+}
+
+.adventure-mascots {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  max-width: 18rem;
+  margin: -0.5rem auto 0;
+  padding: 0 0.5rem;
+  pointer-events: none;
+}
+
+.mascot {
+  width: 4.5rem;
+  height: auto;
+}
+
+.bob-a { animation: bob 2.8s ease-in-out infinite; }
+.bob-b { animation: bob 3.1s ease-in-out infinite 0.35s; }
+
+/* Cover photo */
+.adventure-photo {
+  position: relative;
+  z-index: 4;
+  margin: 1rem 1.25rem 0.5rem;
+}
+
+.adventure-cover {
+  display: block;
+  width: 100%;
+  height: clamp(10rem, 42vw, 14rem);
+  object-fit: cover;
+  border-radius: 1.25rem;
+  border: 4px solid #fff;
+  box-shadow: 0 8px 20px rgba(21, 101, 192, 0.2);
+}
+
+.photo-cloud-top,
+.photo-cloud-bottom {
+  height: 1rem;
+  margin: 0 auto;
+  width: 60%;
+  background: #fff;
+  border-radius: 999px;
+  opacity: 0.85;
+}
+
+.photo-cloud-top { margin-bottom: 0.35rem; }
+.photo-cloud-bottom { margin-top: 0.35rem; }
+
+/* Details card */
+.adventure-details {
+  position: relative;
+  z-index: 4;
+  padding: 1rem 1.25rem;
+  text-align: center;
+}
+
+.adventure-info-card {
+  background: #fff;
+  border-radius: 1.15rem;
+  border: 2.5px dashed color-mix(in srgb, var(--birthday-primary) 70%, white);
+  padding: 0.85rem 1rem;
+  text-align: left;
+  box-shadow: 0 10px 0 rgba(25, 118, 210, 0.1);
+}
+
+.info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.65rem 0.15rem;
+}
+
+.info-row + .info-row {
+  border-top: 1px dashed color-mix(in srgb, var(--birthday-primary) 35%, white);
+}
+
+.info-icon {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.info-row p {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+  color: var(--birthday-text);
+  text-transform: uppercase;
+}
+
+.info-time {
+  color: var(--birthday-secondary) !important;
+}
+
+.info-venue {
+  margin-bottom: 0.15rem !important;
+}
+
+.info-address {
+  text-transform: none !important;
+  font-weight: 600 !important;
+  font-size: 0.78rem !important;
+  color: color-mix(in srgb, var(--birthday-text) 80%, white) !important;
+}
+
+.adventure-maps {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1rem;
+  min-height: 2.6rem;
+  padding: 0.55rem 1.4rem;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--birthday-primary);
+  border: 2px solid var(--birthday-primary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  box-shadow: 0 4px 0 rgba(25, 118, 210, 0.15);
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.adventure-maps:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+}
+
+.adventure-maps:focus-visible {
+  outline: 2px solid var(--birthday-secondary);
+  outline-offset: 3px;
+}
+
+.adventure-closing {
+  position: relative;
+  z-index: 4;
+  margin: 0.5rem auto 0.75rem;
+  max-width: 16rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: 999px;
+  background: var(--birthday-primary);
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+  box-shadow: 0 6px 0 rgba(13, 71, 161, 0.25);
+}
+
+/* Footer */
+.adventure-footer {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: 1fr 1.2fr 1fr;
+  align-items: end;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem 0;
+  min-height: 5.5rem;
+  pointer-events: none;
+}
+
+.deco-cupcake,
+.deco-gifts {
+  width: 4.25rem;
+  height: auto;
+  justify-self: center;
+}
+
+.adventure-grass {
+  height: 1.6rem;
+  align-self: end;
+  background:
+    radial-gradient(circle at 10% 0, #66bb6a 0.55rem, transparent 0.56rem),
+    radial-gradient(circle at 30% 0, #81c784 0.5rem, transparent 0.51rem),
+    radial-gradient(circle at 50% 0, #66bb6a 0.6rem, transparent 0.61rem),
+    radial-gradient(circle at 70% 0, #81c784 0.5rem, transparent 0.51rem),
+    radial-gradient(circle at 90% 0, #66bb6a 0.55rem, transparent 0.56rem),
+    linear-gradient(#66bb6a, #43a047);
+  border-radius: 1rem 1rem 0 0;
+}
+
+/* RSVP */
+.adventure-rsvp {
+  position: relative;
+  z-index: 4;
+  padding: 1.25rem 1.25rem 0.5rem;
+  text-align: center;
+}
+
+.adventure-rsvp-title {
+  margin: 0 0 0.85rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--birthday-text);
+}
+
+.adventure-rsvp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: min(100%, 18rem);
+  min-height: 3.1rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--birthday-primary);
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 8px 0 rgba(13, 71, 161, 0.28);
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.adventure-rsvp-btn:hover {
+  transform: translateY(-3px);
+  filter: brightness(1.06);
+}
+
+.adventure-rsvp-btn:focus-visible {
+  outline: 2px solid var(--birthday-secondary);
+  outline-offset: 3px;
+}
+
+.adventure-rsvp-hint {
+  margin: 0 auto;
+  max-width: 16rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--birthday-text);
+}
+
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-6px) rotate(2deg); }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .float-a,
+  .float-b,
+  .bob-a,
+  .bob-b,
+  .s1,
+  .s2,
+  .s3,
+  .adventure-cloud {
+    animation: none;
+  }
+
+  .adventure-maps,
+  .adventure-rsvp-btn {
+    transition: none;
+  }
+}
+
+@media (max-width: 359px) {
+  .adventure-balloons { width: 3.5rem; }
+  .mascot { width: 3.6rem; }
+  .adventure-name { -webkit-text-stroke-width: 1.5px; }
+}

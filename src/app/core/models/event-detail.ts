@@ -9,10 +9,15 @@ export interface EventDetail {
   time?: string;
   venue?: string;
   address?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  placeId?: string | null;
+  googleMapsUrl?: string | null;
   dressCode?: string;
   honoreeName?: string;
   status: EventStatus;
   slug?: string;
+  invitationIsPublished?: boolean;
   coverImage?: string;
   templateId?: string;
   templateName?: string;

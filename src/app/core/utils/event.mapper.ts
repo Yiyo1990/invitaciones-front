@@ -40,10 +40,18 @@ export function mapEventApiToDetail(
     eventDate: new Date(api.eventDate),
     time: api.eventTime ?? undefined,
     venue: api.venueName ?? undefined,
-    address: buildAddress(api),
+    address: api.address ?? undefined,
+    latitude: api.latitude ?? null,
+    longitude: api.longitude ?? null,
+    placeId: api.placeId ?? null,
+    googleMapsUrl: api.googleMapsUrl ?? null,
     dressCode: api.dressCode ?? undefined,
     status: api.status,
     slug: api.slug,
+    invitationIsPublished:
+      options.invitation?.isPublished ??
+      options.dashboard?.invitation?.isPublished ??
+      false,
     coverImage: options.invitation?.coverImageUrl ?? undefined,
     templateId: options.invitation?.templateId ?? undefined,
     templateName: options.templateName,
@@ -78,6 +86,18 @@ export function mapFormToCreateEventRequest(form: CreateEventForm): CreateEventR
   if (form.honoreeName.trim()) {
     request.description = `Festejado(s): ${form.honoreeName.trim()}`;
   }
+  if (form.latitude != null) {
+    request.latitude = form.latitude;
+  }
+  if (form.longitude != null) {
+    request.longitude = form.longitude;
+  }
+  if (form.placeId?.trim()) {
+    request.placeId = form.placeId.trim();
+  }
+  if (form.googleMapsUrl?.trim()) {
+    request.googleMapsUrl = form.googleMapsUrl.trim();
+  }
 
   return request;
 }
@@ -94,6 +114,10 @@ export function mapFormToUpdateEventRequest(form: CreateEventForm): UpdateEventR
     description: form.honoreeName.trim()
       ? `Festejado(s): ${form.honoreeName.trim()}`
       : null,
+    latitude: form.latitude ?? null,
+    longitude: form.longitude ?? null,
+    placeId: form.placeId?.trim() || null,
+    googleMapsUrl: form.googleMapsUrl?.trim() || null,
   };
 }
 
@@ -111,11 +135,4 @@ function toIsoDateString(dateInput: string): string {
     return `${dateInput}T00:00:00.000Z`;
   }
   return new Date(dateInput).toISOString();
-}
-
-function buildAddress(api: EventApiResponse): string | undefined {
-  const parts = [api.address, api.city, api.state, api.country].filter(
-    (part): part is string => !!part && part.trim().length > 0,
-  );
-  return parts.length > 0 ? parts.join(', ') : undefined;
 }
